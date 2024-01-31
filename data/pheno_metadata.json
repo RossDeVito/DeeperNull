@@ -1,0 +1,25 @@
+{
+    "body_fat_percentage_23099": {
+        "name": "body fat percentage",
+        "field ID": "23099",
+        "ukbb_category": "body composition"
+    },
+    "glycated_haemoglobin_30750": {
+        "name": "glycated haemoglobin",
+        "field ID": "30750",
+        "ukbb_category": "blood",
+		"covars": [
+			["age_at_recruitment_21022", "sex_31"]
+		]
+    },
+    "platelet_count_30080": {
+        "name": "platelet count",
+        "field ID": "30080",
+        "ukbb_category": "blood"
+    },
+    "standing_height_50": {
+        "name": "standing height",
+        "field ID": "50",
+        "ukbb_category": "body composition"
+    }
+}

@@ -321,9 +321,8 @@ def score_and_plot_binary(y_true, y_pred, out_dir, plot_prefix):
 if __name__ == '__main__':
 	args = parse_args()
 
-	# Create output directory if it does not exist.
-	if not os.path.isdir(args.out_dir):
-		os.mkdir(args.out_dir)
+	# Create output directory
+	os.makedirs(args.out_dir, exist_ok=True)
 
 	# Read in model configuration then save with n_folds added.
 	with open(args.model_config, 'r') as f:

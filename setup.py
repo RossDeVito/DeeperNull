@@ -10,10 +10,12 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     install_requires=[
-        # List your project dependencies here
-        # For example:
-        # 'numpy',
-        # 'pandas',
-        # 'xgboost',
+        'numpy',
+        'pandas',
+        'xgboost',
+        'scikit-learn',
+        'scipy',
+        'matplotlib',
+        'seaborn',
     ],
 )

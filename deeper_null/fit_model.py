@@ -325,10 +325,12 @@ if __name__ == '__main__':
 	if not os.path.isdir(args.out_dir):
 		os.mkdir(args.out_dir)
 
-	# Read in model configuration.
+	# Read in model configuration then save with n_folds added.
 	with open(args.model_config, 'r') as f:
 		model_config = json.load(f)
 	model_config['n_folds'] = args.n_folds
+	with open(os.path.join(args.out_dir, 'model_config.json'), 'w') as f:
+		json.dump(model_config, f, indent=4)
 
 	# Load sample files.
 	train_samp_ids, pred_samp_ids = load_sample_files(

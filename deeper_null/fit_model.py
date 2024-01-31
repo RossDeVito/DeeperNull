@@ -419,4 +419,17 @@ if __name__ == '__main__':
 	with open(os.path.join(args.out_dir, 'ho_scores.json'), 'w') as f:
 		json.dump(scores, f, indent=4)
 
+	# Save ensemble predictions and standard deviation and save as one csv
+	if pred_Xy[0] is not None:
+		ens_pred_dev = {
+			sid: (np.mean(preds), np.std(preds)) for sid, preds in ensemble_preds.items()
+		}
+		ens_pred_dev = pd.DataFrame.from_dict(ens_pred_dev, orient='index')
+		ens_pred_dev.columns = ['pred', 'std']
+		ens_pred_dev.index.name = args.sample_id_col
+		ens_pred_dev.reset_index().to_csv(
+			os.path.join(args.out_dir, 'ens_preds.csv'), index=False
+		)
+
+
 	

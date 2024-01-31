@@ -17,5 +17,6 @@ setup(
         'scipy',
         'matplotlib',
         'seaborn',
+		'tqdm',
     ],
 )

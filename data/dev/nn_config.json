@@ -1,0 +1,15 @@
+{
+	"model_type": "nn_regressor",
+	"nn_type": "dense",
+	"nn_args": {
+		"hidden_layers": [10, 8, 4],
+		"activations": "ReLU",
+		"dropout": 0.1
+	},
+	"train_args": {
+		"max_epochs": 10,
+		"val_frac": 0.1,
+		"verbose": true,
+		"dataloader_workers": 4
+	}
+}

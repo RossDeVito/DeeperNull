@@ -64,7 +64,7 @@ Example usage:
 		--train_samples ../data/dev/train_samples.txt \
 		--pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 
-		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/model_config.json -o ../.. --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
+		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/nn_config.json -o ../../test_out --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 		
 """
 import argparse
@@ -81,6 +81,7 @@ from tqdm import tqdm
 import xgboost as xgb
 
 from deeper_null.xgb_models import XGB_MODEL_TYPES, create_xgb_model
+from deeper_null.nn_models import NN_MODEL_TYPES, create_nn_model
 
 
 
@@ -219,6 +220,8 @@ def load_covar_pheno_data(
 def create_model(model_config):
 	if model_config['model_type'].lower() in XGB_MODEL_TYPES:
 		return create_xgb_model(model_config)
+	elif model_config['model_type'].lower() in NN_MODEL_TYPES:
+		return create_nn_model(model_config)
 	else:
 		raise ValueError('Unknown model type: {}'.format(model_config['model_type']))
 	
@@ -369,20 +372,19 @@ if __name__ == '__main__':
 		ho_y = train_Xy[1].loc[ho_samp_ids]
 
 		# Create model
-		## TODO
 		model = create_model(model_config)
 
 		# Fit model
 		model.fit(train_X, train_y)
 
 		# Make predictions on holdout samples
-		ho_preds = model.predict(ho_X)
+		ho_preds = model.predict(ho_X)[0].flatten().tolist() # type: ignore
 		train_ho_preds.update(dict(zip(ho_X.index, ho_preds)))
 
 		# Make predictions on prediction samples and add to ensemble values
 		# so that they can be averaged later
 		if pred_Xy[0] is not None:
-			pred_preds = model.predict(pred_Xy[0])
+			pred_preds = model.predict(pred_Xy[0])[0].flatten().tolist() # type: ignore
 
 			for samp_id, pred in zip(pred_Xy[0].index, pred_preds):
 				ensemble_preds[samp_id].append(pred)

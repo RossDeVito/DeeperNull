@@ -10,13 +10,15 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     install_requires=[
+		'matplotlib',
         'numpy',
         'pandas',
-        'xgboost',
+		'pytorch-lightning',
         'scikit-learn',
         'scipy',
-        'matplotlib',
         'seaborn',
+		'torch>=2.1',
 		'tqdm',
+		'xgboost',
     ],
 )

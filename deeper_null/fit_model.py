@@ -64,7 +64,7 @@ Example usage:
 		--train_samples ../data/dev/train_samples.txt \
 		--pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 
-		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/nn_config.json -o ../../test_out --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
+		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/deep_null_config.json -o ../../test_out --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 		
 """
 import argparse

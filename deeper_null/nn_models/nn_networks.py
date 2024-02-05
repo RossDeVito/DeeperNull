@@ -83,11 +83,43 @@ class DenseNN(nn.Module):
 		return x
 	
 
+class DeepNullNN(nn.Module):
+	"""DeepNull style neural network.
+
+	NN has two main components: a small dense neural network and residual
+	linear connection. The output of the model is the sum of these two
+	components' outputs.
+
+	Args:
+		hidden_layers: list of int, hidden layer sizes for dense network.
+			Default (from paper): [64, 64, 32, 16]
+		activation: str, activation function for dense NN component.
+			Default (from paper): 'ReLU'
+		dropout: float, dropout rate for dense network. Default: 0.0
+	"""
+
+	def __init__(
+			self, 
+			hidden_layers=[64, 64, 32, 16], 
+			activation='ReLU', 
+			dropout=0.0
+		):
+		"""Initialize DeepNull neural network."""
+		super().__init__()
+
+		self.dense_nn = DenseNN(hidden_layers, activation, dropout)
+		self.linear_residual = nn.LazyLinear(1)
+
+	def forward(self, x):
+		"""Forward pass."""
+		return self.dense_nn(x) + self.linear_residual(x)
+	
+
 def create_nn(nn_type, nn_args):
 	"""Create neural network."""
 	if nn_type == 'dense':
 		return DenseNN(**nn_args)
 	elif nn_type == 'deep_null':
-		raise NotImplementedError('deep_null not implemented')
+		return DeepNullNN(**nn_args)
 	else:
 		raise ValueError(f'Invalid nn_type: {nn_type}')

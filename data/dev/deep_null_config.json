@@ -1,0 +1,13 @@
+{
+	"model_type": "nn_regressor",
+	"nn_type": "deep_null",
+	"nn_args": {},
+	"train_args": {
+		"max_epochs": 10,
+		"verbose": true,
+		"dataloader_workers": 4,
+		"lr": 1e-4,
+		"batch_size": 1024,
+		"optimizer_type": "adam"
+	}
+}

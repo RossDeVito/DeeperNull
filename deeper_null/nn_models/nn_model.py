@@ -20,6 +20,9 @@ Model configuration JSON should have the following keys:
 	* dataset_type: str, one of ['tabular' (default)]
 	* compile: bool, whether to compile the model. Default is False.
 	* dataloader_workers: int, number of workers for data loaders.
+		Default is 0.
+	* log_every_n_steps: int, from pytorch_lightning.Trainer. How often
+		to log within a given training step. Default is 50.
 
 
 """
@@ -137,11 +140,13 @@ class NNModel:
 		if 'max_epochs' not in config['train_args']:
 			self.config['train_args']['max_epochs'] = 1000
 		if 'patience' not in config['train_args']:
-			self.config['train_args']['patience'] = 10 if 'val_frac' in config['train_args'] else 0
+			self.config['train_args']['patience'] = 10 if 'val_frac' in config['train_args'] else None
 		if 'min_delta' not in config['train_args']:
 			self.config['train_args']['min_delta'] = 0
 		if 'verbose' not in config['train_args']:
 			self.config['train_args']['verbose'] = False
+		if 'log_every_n_steps' not in config['train_args']:
+			self.config['train_args']['log_every_n_steps'] = 50
 
 		# Create model
 		if self.config['model_type'] == 'nn_bin_classifier':
@@ -220,12 +225,14 @@ class NNModel:
 		if val_dataset is not None:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
+				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
 				callbacks=[early_stop_callback],
 			)
 			self.trainer.fit(self.model, train_loader, val_loader)
 		else:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
+				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
 			)
 			self.trainer.fit(self.model, train_loader)
 

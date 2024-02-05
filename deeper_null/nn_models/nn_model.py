@@ -137,7 +137,7 @@ class NNModel:
 		if 'max_epochs' not in config['train_args']:
 			self.config['train_args']['max_epochs'] = 1000
 		if 'patience' not in config['train_args']:
-			self.config['train_args']['patience'] = 10
+			self.config['train_args']['patience'] = 10 if 'val_frac' in config['train_args'] else 0
 		if 'min_delta' not in config['train_args']:
 			self.config['train_args']['min_delta'] = 0
 		if 'verbose' not in config['train_args']:

@@ -18,6 +18,7 @@ setup(
         'scipy',
         'seaborn',
 		'torch>=2.1',
+		'torchmetrics',
 		'tqdm',
 		'xgboost',
     ],

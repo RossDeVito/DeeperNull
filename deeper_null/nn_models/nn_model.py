@@ -34,6 +34,11 @@ from torch.utils.data import DataLoader, random_split
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
 
+from torchmetrics import MetricCollection
+from torchmetrics.regression import (
+	MeanSquaredError, R2Score, MeanAbsolutePercentageError
+)
+
 
 from deeper_null.nn_models.nn_networks import create_nn
 from deeper_null.nn_models.data_modules import TabularDataset
@@ -53,6 +58,9 @@ class BaseNN(pl.LightningModule):
 		self.model = create_nn(config['nn_type'], config['nn_args'])
 		self.train_args = config['train_args']
 
+		self.train_metrics = MetricCollection({})
+		self.val_metrics = MetricCollection({})
+
 	def forward(self, x):
 		"""Forward pass."""
 		return self.model(x)
@@ -62,7 +70,13 @@ class BaseNN(pl.LightningModule):
 		x, y = batch
 		y_hat = self.model(x)
 		loss = self.loss(y_hat, y)
-		self.log('train_loss', loss, on_step=True, prog_bar=True)
+		self.log(
+			'train_loss', loss, on_step=True, on_epoch=True, prog_bar=True
+		)
+		self.train_metrics(y_hat, y)
+		self.log_dict(
+			self.train_metrics, on_epoch=True, prog_bar=True
+		)
 		return loss
 
 	def validation_step(self, batch, batch_idx=None):
@@ -70,7 +84,11 @@ class BaseNN(pl.LightningModule):
 		x, y = batch
 		y_hat = self.model(x)
 		loss = self.loss(y_hat, y)
-		self.log('val_loss', loss, on_step=True, prog_bar=True)
+		self.log('val_loss', loss, on_epoch=True, prog_bar=True)
+		self.val_metrics(y_hat, y)
+		self.log_dict(
+			self.val_metrics, on_epoch=True, prog_bar=True
+		)
 		return loss
 
 	def test_step(self, batch, batch_idx=None):
@@ -112,6 +130,20 @@ class RegressorNN(BaseNN):
 		"""Initialize Pytorch Lightning regression."""
 		super().__init__(config)
 		self.loss = nn.functional.mse_loss
+		self.train_metrics = MetricCollection(
+			{
+				'mse': MeanSquaredError(),
+				'r2': R2Score(),
+				'mape': MeanAbsolutePercentageError()
+			}
+		)
+		self.val_metrics = MetricCollection(
+			{
+				'mse': MeanSquaredError(),
+				'r2': R2Score(),
+				'mape': MeanAbsolutePercentageError()
+			}
+		)
 	
 	def predict_step(self, batch, batch_idx=None, dataloader_idx=None):
 		"""Predict step."""

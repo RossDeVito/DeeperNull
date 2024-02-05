@@ -62,7 +62,7 @@ class BaseNN(pl.LightningModule):
 		x, y = batch
 		y_hat = self.model(x)
 		loss = self.loss(y_hat, y)
-		self.log('train_loss', loss)
+		self.log('train_loss', loss, on_step=True, prog_bar=True)
 		return loss
 
 	def validation_step(self, batch, batch_idx=None):
@@ -70,7 +70,7 @@ class BaseNN(pl.LightningModule):
 		x, y = batch
 		y_hat = self.model(x)
 		loss = self.loss(y_hat, y)
-		self.log('val_loss', loss)
+		self.log('val_loss', loss, on_step=True, prog_bar=True)
 		return loss
 
 	def test_step(self, batch, batch_idx=None):

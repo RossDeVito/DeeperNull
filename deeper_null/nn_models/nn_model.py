@@ -71,7 +71,7 @@ class BaseNN(pl.LightningModule):
 		y_hat = self.model(x)
 		loss = self.loss(y_hat, y)
 		self.log(
-			'train_loss', loss, on_step=True, on_epoch=True, prog_bar=True
+			'train_loss', loss, on_epoch=True, prog_bar=True
 		)
 		self.train_metrics(y_hat, y)
 		self.log_dict(

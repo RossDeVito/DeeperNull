@@ -151,14 +151,27 @@ class RegressorNN(BaseNN):
 	
 
 class CustomProgressBar(ProgressBar):
-	"""Custom TQDM style progress bar that prints metrics."""
+	"""Custom TQDM style progress bar that shows metrics without getting
+	cut off on jupyter lab.
+	"""
 
-	def on_train_epoch_end(self, trainer, pl_module, outputs):
-		"""Print metrics at the end of each training epoch."""
-		super().on_train_epoch_end(trainer, pl_module, outputs)
-		trainer.logger.log_metrics(
-			{f'train_{k}': v for k, v in pl_module.train_metrics.compute().items()}
-		)
+	def init_train_tqdm(self):
+		"""Initialize training tqdm."""
+		bar = super().init_train_tqdm()
+		bar.set_postfix_str('')
+		return bar
+
+	def init_validation_tqdm(self):
+		"""Initialize validation tqdm."""
+		bar = super().init_validation_tqdm()
+		bar.set_postfix_str('')
+		return bar
+
+	def init_test_tqdm(self):
+		"""Initialize test tqdm."""
+		bar = super().init_test_tqdm()
+		bar.set_postfix_str('')
+		return bar
 	
 
 class NNModel:

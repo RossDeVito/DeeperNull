@@ -9,7 +9,7 @@ Dataset types:
 	columns that contain 'coord' in the name will be scaled by a factor of
 	100,000 (e.g. 600,000 becomes 6). This is useful for scaling the east
 	and north coordinates in the UKBB dataset which range from about 0 to
-	600,000.
+	1.2 million.
 """
 
 import torch

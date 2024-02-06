@@ -32,7 +32,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, random_split
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import EarlyStopping, RichProgressBar
+from pytorch_lightning.callbacks import EarlyStopping
 
 from torchmetrics import MetricCollection
 from torchmetrics.regression import (
@@ -258,14 +258,13 @@ class NNModel:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
-				callbacks=[early_stop_callback, RichProgressBar()],
+				callbacks=[early_stop_callback],
 			)
 			self.trainer.fit(self.model, train_loader, val_loader)
 		else:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
-				callbacks=[RichProgressBar()],
 			)
 			self.trainer.fit(self.model, train_loader)
 

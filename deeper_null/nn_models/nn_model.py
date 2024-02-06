@@ -32,7 +32,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, random_split
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import EarlyStopping, ProgressBar
+from pytorch_lightning.callbacks import EarlyStopping, TQDMProgressBar
 
 from torchmetrics import MetricCollection
 from torchmetrics.regression import (
@@ -150,7 +150,7 @@ class RegressorNN(BaseNN):
 		return self.model(batch)
 	
 
-class CustomProgressBar(ProgressBar):
+class CustomProgressBar(TQDMProgressBar):
 	"""Custom TQDM style progress bar that shows metrics without getting
 	cut off on jupyter lab.
 	"""

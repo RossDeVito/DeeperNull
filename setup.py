@@ -14,6 +14,7 @@ setup(
         'numpy',
         'pandas',
 		'pytorch-lightning',
+		'rich',
         'scikit-learn',
         'scipy',
         'seaborn',

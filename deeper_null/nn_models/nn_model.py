@@ -155,6 +155,9 @@ class CustomProgressBar(TQDMProgressBar):
 	and validation epochs.
 	"""
 
+	def on_epoch_start(self):
+		print('\n')
+
 	def on_train_epoch_end(self, trainer, pl_module):
 		"""Print metrics at end of training epoch."""
 		super().on_train_epoch_end(trainer, pl_module)

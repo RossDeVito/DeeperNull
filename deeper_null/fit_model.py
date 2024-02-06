@@ -245,6 +245,7 @@ def score_and_plot_regression(y_true, y_pred, out_dir, plot_prefix=''):
 	scores['r2'] = metrics.r2_score(y_true, y_pred)
 	scores['mse'] = metrics.mean_squared_error(y_true, y_pred)
 	scores['mae'] = metrics.mean_absolute_error(y_true, y_pred)
+	scores['mape'] = metrics.mean_absolute_percentage_error(y_true, y_pred)
 
 	# Plot pred v true scatter
 	fig, ax = plt.subplots()

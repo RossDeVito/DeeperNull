@@ -32,7 +32,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, random_split
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import EarlyStopping, ProgressBar
+from pytorch_lightning.callbacks import EarlyStopping
 
 from torchmetrics import MetricCollection
 from torchmetrics.regression import (
@@ -150,30 +150,6 @@ class RegressorNN(BaseNN):
 		return self.model(batch)
 	
 
-class CustomProgressBar(ProgressBar):
-	"""Custom TQDM style progress bar that shows metrics without getting
-	cut off on jupyter lab.
-	"""
-
-	def init_train_tqdm(self):
-		"""Initialize training tqdm."""
-		bar = super().init_train_tqdm()
-		bar.set_postfix_str('')
-		return bar
-
-	def init_validation_tqdm(self):
-		"""Initialize validation tqdm."""
-		bar = super().init_validation_tqdm()
-		bar.set_postfix_str('')
-		return bar
-
-	def init_test_tqdm(self):
-		"""Initialize test tqdm."""
-		bar = super().init_test_tqdm()
-		bar.set_postfix_str('')
-		return bar
-	
-
 class NNModel:
 	"""Neural network model wrapper.
 	
@@ -282,14 +258,13 @@ class NNModel:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
-				callbacks=[early_stop_callback, CustomProgressBar()],
+				callbacks=[early_stop_callback],
 			)
 			self.trainer.fit(self.model, train_loader, val_loader)
 		else:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
-				callbacks=[CustomProgressBar()],
 			)
 			self.trainer.fit(self.model, train_loader)
 

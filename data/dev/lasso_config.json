@@ -1,0 +1,6 @@
+{
+	"model_type": "lasso",
+	"model_params": {
+		"alpha": 0.5
+	}
+}

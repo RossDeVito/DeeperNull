@@ -308,7 +308,7 @@ class NNModel:
 
 		# Make predictions
 		preds = self.trainer.predict(self.model, loader)
-		return preds
+		return preds[0]
 
 
 def create_nn_model(config):

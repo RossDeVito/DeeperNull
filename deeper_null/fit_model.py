@@ -82,6 +82,7 @@ import xgboost as xgb
 
 from deeper_null.xgb_models import XGB_MODEL_TYPES, create_xgb_model
 from deeper_null.nn_models import NN_MODEL_TYPES, create_nn_model
+from deeper_null.linear_models import LINEAR_MODEL_TYPES, create_linear_model
 
 
 
@@ -222,6 +223,8 @@ def create_model(model_config):
 		return create_xgb_model(model_config)
 	elif model_config['model_type'].lower() in NN_MODEL_TYPES:
 		return create_nn_model(model_config)
+	elif model_config['model_type'].lower() in LINEAR_MODEL_TYPES:
+		return create_linear_model(model_config)
 	else:
 		raise ValueError('Unknown model type: {}'.format(model_config['model_type']))
 	
@@ -322,6 +325,9 @@ def score_and_plot_binary(y_true, y_pred, out_dir, plot_prefix):
 
 
 if __name__ == '__main__':
+
+	__spec__ = None
+
 	args = parse_args()
 
 	# Create output directory
@@ -378,13 +384,13 @@ if __name__ == '__main__':
 		model.fit(train_X, train_y)
 
 		# Make predictions on holdout samples
-		ho_preds = model.predict(ho_X)[0].flatten().tolist() # type: ignore
+		ho_preds = model.predict(ho_X).flatten().tolist()	# type: ignore
 		train_ho_preds.update(dict(zip(ho_X.index, ho_preds)))
 
 		# Make predictions on prediction samples and add to ensemble values
 		# so that they can be averaged later
 		if pred_Xy[0] is not None:
-			pred_preds = model.predict(pred_Xy[0])[0].flatten().tolist() # type: ignore
+			pred_preds = model.predict(pred_Xy[0]).flatten().tolist()	# type: ignore
 
 			for samp_id, pred in zip(pred_Xy[0].index, pred_preds):
 				ensemble_preds[samp_id].append(pred)
@@ -423,6 +429,7 @@ if __name__ == '__main__':
 
 	# Save ensemble predictions and standard deviation and save as one csv
 	if pred_Xy[0] is not None:
+		print('Saving ensemble predictions.')
 		ens_pred_dev = {
 			sid: (np.mean(preds), np.std(preds)) for sid, preds in ensemble_preds.items()
 		}
@@ -432,3 +439,5 @@ if __name__ == '__main__':
 		ens_pred_dev.reset_index().to_csv(
 			os.path.join(args.out_dir, 'ens_preds.csv'), index=False
 		)
+	else:
+		print('No prediction samples provided. No ensemble predictions to save.')

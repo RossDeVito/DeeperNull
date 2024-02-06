@@ -4,4 +4,4 @@ from .nn_model import (
 
 from .nn_networks import create_nn
 
-from .data_modules import TabularDataset
+from .data_modules import TabularDataset, CoordScalingTabularDataset

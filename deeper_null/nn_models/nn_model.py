@@ -41,7 +41,9 @@ from torchmetrics.regression import (
 
 
 from deeper_null.nn_models.nn_networks import create_nn
-from deeper_null.nn_models.data_modules import TabularDataset
+from deeper_null.nn_models.data_modules import (
+	TabularDataset, CoordScalingTabularDataset
+)
 
 
 NN_MODEL_TYPES = ['nn_bin_classifier', 'nn_regressor']
@@ -233,6 +235,8 @@ class NNModel:
 		if ('dataset_type' not in self.config['train_args']) or \
 			(self.config['train_args']['dataset_type'] == 'tabular'):
 			train_dataset = TabularDataset(X, y)
+		elif self.config['train_args']['dataset_type'] == 'coord_scaling_tabular':
+			train_dataset = CoordScalingTabularDataset(X, y)
 		else:
 			raise ValueError(
 				f"Invalid dataset_type: {self.config['train_args']['dataset_type']}"

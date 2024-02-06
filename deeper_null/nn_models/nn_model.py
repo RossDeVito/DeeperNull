@@ -150,23 +150,23 @@ class RegressorNN(BaseNN):
 		return self.model(batch)
 	
 
-class CustomProgressBar(TQDMProgressBar):
-	"""Custom TQDM style progress bar prints metrics at end of training
-	and validation epochs.
-	"""
+# class CustomProgressBar(TQDMProgressBar):
+# 	"""Custom TQDM style progress bar prints metrics at end of training
+# 	and validation epochs.
+# 	"""
 
-	def on_epoch_start(self):
-		print('\n')
+# 	def on_epoch_start(self):
+# 		print('\n')
 
-	def on_train_epoch_end(self, trainer, pl_module):
-		"""Print metrics at end of training epoch."""
-		super().on_train_epoch_end(trainer, pl_module)
-		print(f"Train metrics: {pl_module.train_metrics.compute()}")
+# 	def on_train_epoch_end(self, trainer, pl_module):
+# 		"""Print metrics at end of training epoch."""
+# 		super().on_train_epoch_end(trainer, pl_module)
+# 		print(f"Train metrics: {pl_module.train_metrics.compute()}")
 
-	def on_validation_epoch_end(self, trainer, pl_module):
-		"""Print metrics at end of validation epoch."""
-		super().on_validation_epoch_end(trainer, pl_module)
-		print(f"Val metrics: {pl_module.val_metrics.compute()}")
+# 	def on_validation_epoch_end(self, trainer, pl_module):
+# 		"""Print metrics at end of validation epoch."""
+# 		super().on_validation_epoch_end(trainer, pl_module)
+# 		print(f"Val metrics: {pl_module.val_metrics.compute()}")
 	
 
 class NNModel:
@@ -277,14 +277,13 @@ class NNModel:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
-				callbacks=[early_stop_callback, CustomProgressBar()],
+				callbacks=[early_stop_callback],
 			)
 			self.trainer.fit(self.model, train_loader, val_loader)
 		else:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
-				callbacks=[CustomProgressBar()],
 			)
 			self.trainer.fit(self.model, train_loader)
 

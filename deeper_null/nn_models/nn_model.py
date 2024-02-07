@@ -301,6 +301,8 @@ class NNModel:
 		if ('dataset_type' not in self.config['train_args']) or \
 			(self.config['train_args']['dataset_type'] == 'tabular'):
 			dataset = TabularDataset(X)
+		elif self.config['train_args']['dataset_type'] == 'coord_scaling_tabular':
+			dataset = CoordScalingTabularDataset(X)
 		else:
 			raise ValueError(
 				f"Invalid dataset_type: {self.config['train_args']['dataset_type']}"

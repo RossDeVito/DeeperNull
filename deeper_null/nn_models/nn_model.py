@@ -17,7 +17,7 @@ Model configuration JSON should have the following keys:
 	* verbose: bool, verbose output. Default is False
 	* val_frac: float, validation set fraction for early stopping.
 		Default is None, which means no early stopping.
-	* dataset_type: str, one of ['tabular' (default)]
+	* dataset_type: str, one of ['tabular' (default), 'coord_scaling_tabular']
 	* compile: bool, whether to compile the model. Default is False.
 	* dataloader_workers: int, number of workers for data loaders.
 		Default is 0.
@@ -281,13 +281,17 @@ class NNModel:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
-				callbacks=[early_stop_callback],
+				callbacks=[
+					early_stop_callback,
+					TQDMProgressBar(refresh_rate=10)
+				],
 			)
 			self.trainer.fit(self.model, train_loader, val_loader)
 		else:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
+				callbacks=[TQDMProgressBar(refresh_rate=10)],
 			)
 			self.trainer.fit(self.model, train_loader)
 

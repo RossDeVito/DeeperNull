@@ -283,7 +283,7 @@ class NNModel:
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
 				callbacks=[
 					early_stop_callback,
-					TQDMProgressBar(refresh_rate=10)
+					TQDMProgressBar(refresh_rate=20)
 				],
 			)
 			self.trainer.fit(self.model, train_loader, val_loader)
@@ -291,7 +291,7 @@ class NNModel:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
-				callbacks=[TQDMProgressBar(refresh_rate=10)],
+				callbacks=[TQDMProgressBar(refresh_rate=20)],
 			)
 			self.trainer.fit(self.model, train_loader)
 

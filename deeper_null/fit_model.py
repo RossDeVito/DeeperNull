@@ -53,6 +53,9 @@ Script has the following command line arguments:
 		training and prediction set, it will be used for training and the
 		prediction will be the prediction from the fold it was held out of,
 		not the ensemble average.
+	--train_one_fold: If this flag is present, the model will be trained
+		just one of the n_folds times. This is useful for evaluating
+		different models and training options.
 
 Example usage:
 
@@ -114,6 +117,10 @@ def parse_args():
 						help='Path or paths to file(s) containing sample IDs '
 							'to predict for, but not use for training '
 							'(Optional, see above).')
+	parser.add_argument('--train_one_fold', action='store_true',
+					help='If this flag is present, the model will be trained '
+						'just one of the n_folds times. This is useful for '
+						'evaluating different models and training options.')
 	return parser.parse_args()
 
 
@@ -395,6 +402,10 @@ if __name__ == '__main__':
 
 			for samp_id, pred in zip(pred_Xy[0].index, pred_preds):
 				ensemble_preds[samp_id].append(pred)
+
+		# If only training one fold, break after first fold.
+		if args.train_one_fold:
+			break
 
 	# Save predictions on holdout samples
 	ho_preds = pd.DataFrame.from_dict(train_ho_preds, orient='index')

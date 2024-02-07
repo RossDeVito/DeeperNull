@@ -8,6 +8,8 @@ Model configuration JSON should have the following keys:
 * train_args: dict, options for training. Keys include:
 
 	* optimizer: str, one of ['adam' (default), 'sgd']
+	* optimizer_args: dict, optional keyword arguments to the optimizer
+		besides lr.
 	* lr: float, learning rate. Default is 0.001.
 	* batch_size: int, batch size. Default is 2048.
 	* max_epochs: int, maximum number of epochs. Default is 1000.
@@ -23,6 +25,8 @@ Model configuration JSON should have the following keys:
 		Default is 0.
 	* log_every_n_steps: int, from pytorch_lightning.Trainer. How often
 		to log within a given training step. Default is 50.
+	* pbar_refresh_rate: int, from pytorch_lightning TQDMProgressBar.
+		How often to refresh the progress bar (in steps). Default is 50.
 
 
 """
@@ -104,9 +108,29 @@ class BaseNN(pl.LightningModule):
 	def configure_optimizers(self):
 		"""Configure optimizer."""
 		if 'optimizer' not in self.train_args or self.train_args['optimizer'] == 'adam':
-			optimizer = torch.optim.Adam(self.model.parameters(), lr=self.train_args['lr'])
+			if 'optimizer_args' in self.train_args:
+				optimizer = torch.optim.Adam(
+					self.model.parameters(),
+					lr=self.train_args['lr'],
+					**self.train_args['optimizer_args']
+				)
+			else:
+				optimizer = torch.optim.Adam(
+					self.model.parameters(),
+					lr=self.train_args['lr']
+				)
 		elif self.train_args['optimizer'] == 'sgd':
-			optimizer = torch.optim.SGD(self.model.parameters(), lr=self.train_args['lr'])
+			if 'optimizer_args' in self.train_args:
+				optimizer = torch.optim.SGD(
+					self.model.parameters(),
+					lr=self.train_args['lr'],
+					**self.train_args['optimizer_args']
+				)
+			else:
+				optimizer = torch.optim.SGD(
+					self.model.parameters(),
+					lr=self.train_args['lr']
+				)
 		else:
 			raise ValueError(f'Invalid optimizer: {self.train_args["optimizer"]}')
 		return optimizer
@@ -152,25 +176,6 @@ class RegressorNN(BaseNN):
 		return self.model(batch)
 	
 
-# class CustomProgressBar(TQDMProgressBar):
-# 	"""Custom TQDM style progress bar prints metrics at end of training
-# 	and validation epochs.
-# 	"""
-
-# 	def on_epoch_start(self):
-# 		print('\n')
-
-# 	def on_train_epoch_end(self, trainer, pl_module):
-# 		"""Print metrics at end of training epoch."""
-# 		super().on_train_epoch_end(trainer, pl_module)
-# 		print(f"Train metrics: {pl_module.train_metrics.compute()}")
-
-# 	def on_validation_epoch_end(self, trainer, pl_module):
-# 		"""Print metrics at end of validation epoch."""
-# 		super().on_validation_epoch_end(trainer, pl_module)
-# 		print(f"Val metrics: {pl_module.val_metrics.compute()}")
-	
-
 class NNModel:
 	"""Neural network model wrapper.
 	
@@ -200,6 +205,8 @@ class NNModel:
 			self.config['train_args']['verbose'] = False
 		if 'log_every_n_steps' not in config['train_args']:
 			self.config['train_args']['log_every_n_steps'] = 50
+		if 'pbar_refresh_rate' not in config['train_args']:
+			self.config['train_args']['pbar_refresh_rate'] = 50
 
 		# Create model
 		if self.config['model_type'] == 'nn_bin_classifier':
@@ -283,7 +290,9 @@ class NNModel:
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
 				callbacks=[
 					early_stop_callback,
-					TQDMProgressBar(refresh_rate=50)
+					TQDMProgressBar(
+						refresh_rate=self.config['train_args']['pbar_refresh_rate']
+					)
 				],
 			)
 			self.trainer.fit(self.model, train_loader, val_loader)
@@ -291,7 +300,11 @@ class NNModel:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
 				log_every_n_steps=self.config['train_args']['log_every_n_steps'],
-				callbacks=[TQDMProgressBar(refresh_rate=50)],
+				callbacks=[
+					TQDMProgressBar(
+						refresh_rate=self.config['train_args']['pbar_refresh_rate']
+					)
+				],
 			)
 			self.trainer.fit(self.model, train_loader)
 

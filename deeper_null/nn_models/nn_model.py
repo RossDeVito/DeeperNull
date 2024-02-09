@@ -11,6 +11,10 @@ Model configuration JSON should have the following keys:
 	* optimizer_args: dict, optional keyword arguments to the optimizer
 		besides lr.
 	* lr: float, learning rate. Default is 0.001.
+	* reduce_lr_on_plateau: bool, whether to reduce learning rate on
+		plateau. Default is False.
+	* reduce_lr_on_plateau_args: dict, optional keyword arguments to
+		pass to the ReduceLROnPlateau scheduler. Default is {}.
 	* batch_size: int, batch size. Default is 2048.
 	* max_epochs: int, maximum number of epochs. Default is 1000.
 	* patience: int, early stopping patience. Only used if val_frac is
@@ -145,7 +149,20 @@ class BaseNN(pl.LightningModule):
 				)
 		else:
 			raise ValueError(f'Invalid optimizer: {self.train_args["optimizer"]}')
-		return optimizer
+		
+		if self.train_args['reduce_lr_on_plateau']:
+			scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+				optimizer, **self.train_args['reduce_lr_on_plateau_args']
+			)
+			return {
+				'optimizer': optimizer,
+				'lr_scheduler': {
+					'scheduler': scheduler,
+					'monitor': 'val_loss',
+				}
+			}
+		else:
+			return optimizer
 
 
 class BinaryClassifierNN(BaseNN):
@@ -205,6 +222,10 @@ class NNModel:
 		# min_delta, and verbose.
 		if 'lr' not in config['train_args']:
 			self.config['train_args']['lr'] = 0.001
+		if 'reduce_lr_on_plateau' not in config['train_args']:
+			self.config['train_args']['reduce_lr_on_plateau'] = False
+		if 'reduce_lr_on_plateau_args' not in config['train_args']:
+			self.config['train_args']['reduce_lr_on_plateau_args'] = {}
 		if 'batch_size' not in config['train_args']:
 			self.config['train_args']['batch_size'] = 2048
 		if 'max_epochs' not in config['train_args']:

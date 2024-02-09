@@ -119,6 +119,18 @@ class BaseNN(pl.LightningModule):
 					self.model.parameters(),
 					lr=self.train_args['lr']
 				)
+		elif self.train_args['optimizer'] == 'adamw':
+			if 'optimizer_args' in self.train_args:
+				optimizer = torch.optim.AdamW(
+					self.model.parameters(),
+					lr=self.train_args['lr'],
+					**self.train_args['optimizer_args']
+				)
+			else:
+				optimizer = torch.optim.AdamW(
+					self.model.parameters(),
+					lr=self.train_args['lr']
+				)
 		elif self.train_args['optimizer'] == 'sgd':
 			if 'optimizer_args' in self.train_args:
 				optimizer = torch.optim.SGD(

@@ -90,6 +90,8 @@ class DeepNullNN(nn.Module):
 	linear connection. The output of the model is the sum of these two
 	components' outputs.
 
+	Dropout is only applied to the dense network.
+
 	Args:
 		hidden_layers: list of int, hidden layer sizes for dense network.
 			Default (from paper): [64, 64, 32, 16]

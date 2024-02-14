@@ -32,6 +32,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 # Install Python packages for DeeperNull
 RUN pip3 install --no-cache-dir \
+	dxpy \
 	matplotlib \
 	numpy \
 	pandas \

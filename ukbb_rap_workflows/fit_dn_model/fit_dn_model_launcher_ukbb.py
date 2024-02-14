@@ -41,21 +41,21 @@ CONFIG_UPLOAD_DIR = '/rdevito/deep_null/model_configs'
 
 
 def upload_model_config(file_path, upload_dir=CONFIG_UPLOAD_DIR):
-		"""Upload a file to DNA Nexus and return its file ID.
+	"""Upload a file to DNA Nexus and return its file ID.
 
-		Args:
-				file_path (str): Local path to model config JSON file to upload.
+	Args:
+		file_path (str): Local path to model config JSON file to upload.
 
-		Returns:
-				file : dxlink
-						{"$dnanexus_link": file_id}
-		"""
-		sys.stderr.write("Uploading model config JSON...\n")
-		dxfile = dxpy.upload_local_file(
-				file_path, folder=upload_dir, parents=True
-		)
-		print(dxpy.dxlink(dxfile))
-		return dxpy.dxlink(dxfile)
+	Returns:
+		file : dxlink
+			{"$dnanexus_link": file_id}
+	"""
+	sys.stderr.write("Uploading model config JSON...\n")
+	dxfile = dxpy.upload_local_file(
+			file_path, folder=upload_dir, parents=True
+	)
+	print(dxpy.dxlink(dxfile))
+	return dxpy.dxlink(dxfile)
 
 
 def parse_args():
@@ -160,6 +160,7 @@ def launch_fit(
 	# Upload output files to storage
 	dx upload ${upload_root} -r \
     	--destination ${save_dir}
+	```
 
 	Args:
 		covar_file (str): Path to covariate file in storage.

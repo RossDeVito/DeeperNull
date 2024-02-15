@@ -17,6 +17,9 @@ Optional args:
 * -v, --out-version_dir (str): All output files will be saved in a
 	subdirectory of out-dir with this name. If None (default), output
 	saved in out-dir.
+* -i, --instance-type (str): Instance type to use for running the
+	workflow. Default: 'mem1_ssd1_x16' if no GPU flag, or 
+	'mem1_ssd1_gpu_x16' if GPU flag.
 * -g, --gpu (str): Flag to use GPU for training Pytorch models.
 	Default: False
 * --covar_dir (str): Path to storage directory containing covariate
@@ -38,6 +41,8 @@ import time
 
 
 CONFIG_UPLOAD_DIR = '/rdevito/deep_null/model_configs'
+CPU_WORKFLOW_ID = 'workflow-xxxx'	# Need workflow ID to launch
+GPU_WORKFLOW_ID = 'workflow-xxxx'	
 
 
 def upload_model_config(file_path, upload_dir=CONFIG_UPLOAD_DIR):
@@ -93,6 +98,10 @@ def parse_args():
 			'with this name. If None (default), output saved in out-dir.'
 	)
 	parser.add_argument(
+		'-i', '--instance-type', type=str,
+		help='Instance type to use for running the workflow.'
+	)
+	parser.add_argument(
 		'-g', '--gpu', action='store_true',
 		help='Flag to use GPU for training Pytorch models.'
 	)
@@ -130,10 +139,11 @@ def launch_fit(
 	model_config_link,
 	train_samp_file,
 	pred_samp_files,
-	output_dir,
-	upload_root,
 	save_dir,
-	pat
+	pat,
+	instance_type,
+	workflow_id,
+	name='fit_dn_model'
 ):
 	"""Launch DeeperNull model fitting workflow.
 
@@ -169,16 +179,37 @@ def launch_fit(
 		train_samp_file (str): Path to training sample file in storage.
 		pred_samp_files (list of str): Path(s) to prediction sample files
 			in storage.
-		output_dir (str): Path to directory where output files will be
-			saved in storage.
-		upload_root (str): Files will be uploaded to storage recursively
-			from this directory.
 		save_dir (str): Path to directory where output files will be saved
 			in storage.
 		pat (str): GitHub personal access token.
+		instance_type (str): Instance type to use for running the workflow.
+		workflow_id (str): ID of the workflow to run.
 	"""
-	sys.stderr.write("Launching DeeperNull model fitting workflow...\n")
+	sys.stderr.write(
+		f"Launching DeeperNull model fitting workflow {name}...\n"
+	)
+
+	# Get workflow
+	workflow = dxpy.dxworkflow.DXWorkflow(dxid=workflow_id)
 	
+	# Run workflow
+	workflow_input = {
+		"covar_file": covar_file,
+		"pheno_file": pheno_file,
+		"model_config": model_config_link,
+		"train_samp_file": train_samp_file,
+		"pred_samp_files": pred_samp_files,
+		"pat": pat
+	}
+	analysis = workflow.run(
+		workflow_input,
+		folder=save_dir,
+		name=name,
+		instance_type=instance_type,
+	)
+
+	sys.stderr.write("Started analysis %s (%s)\n"%(analysis.get_id(), name))
+	return analysis
 
 
 if __name__ == '__main__':
@@ -208,24 +239,38 @@ if __name__ == '__main__':
 	pheno_file = f'{args.pheno_dir}/{args.pheno}.pheno'
 	
 	if args.out_version_dir:
-		output_dir = f'./{args.out_version_dir}/{args.pheno}/{args.covar_set}/{args.model_desc}'
-		upload_root = f'./{args.out_version_dir}'
+		save_dir = f'{args.save_dir}/{args.out_version_dir}/{args.pheno}/{args.covar_set}/{args.model_desc}'
 	else:
-		output_dir = f'./{args.pheno}/{args.covar_set}/{args.model_desc}'
-		upload_root = f'./{args.pheno}'
+		save_dir = f'{args.save_dir}/{args.pheno}/{args.covar_set}/{args.model_desc}'
 
 	train_samp_file = f'{args.samp_dir}/{args.train_samp_fname}'
 	pred_samp_files = [f'{args.samp_dir}/{fname}' for fname in args.pred_samp_fnames]
 
-	launch_fit(
-		covar_file,
-		pheno_file,
-		model_config_link,
-		train_samp_file,
-		pred_samp_files,
-		output_dir,
-		upload_root,
-		args.save_dir,
-		pat
-	)	# Need workflow ID to launch
+	# Set instance type and workflow ID (CPU or GPU version)
+	if args.gpu:
+		if args.instance_type is None:
+			instance_type = 'mem1_ssd1_gpu_x16'
+		else:
+			instance_type = args.instance_type
+		workflow_id = GPU_WORKFLOW_ID
+	else:
+		if args.instance_type is None:
+			instance_type = 'mem1_ssd1_x16'
+		else:
+			instance_type = args.instance_type
+		workflow_id = CPU_WORKFLOW_ID
+
+	# Launch workflow
+	workflow = launch_fit(
+		covar_file=covar_file,
+		pheno_file=pheno_file,
+		model_config_link=model_config_link,
+		train_samp_file=train_samp_file,
+		pred_samp_files=pred_samp_files,
+		save_dir=save_dir,
+		pat=pat,
+		instance_type=instance_type,
+		workflow_id=workflow_id,
+		name=f'{args.model_desc}_{args.pheno}_{args.covar_set}'
+	)
 

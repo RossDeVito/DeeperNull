@@ -7,9 +7,6 @@ workflow fit_dn_model {
 		File model_config
 		File train_samp_file
 		Array[File] pred_samp_files
-		String out_dir	# Should these paths to directories be File?
-		String upload_dir
-		String save_dir
 		String pat
 	}
 
@@ -20,15 +17,16 @@ workflow fit_dn_model {
 			model_config=model_config,
 			train_samp_file=train_samp_file,
 			pred_samp_files=pred_samp_files,
-			out_dir=out_dir,
-			upload_dir=upload_dir,
-			save_dir=save_dir,
 			pat=pat
 	}
 
 	output {
-    	# Want equivalent of dx upload ${upload_root} -r \
-    	#						--destination ${save_dir}
+		File ens_preds = fit_dn_model_task.ens_preds
+		File ho_jointplot = fit_dn_model_task.ho_jointplot
+		File ho_preds = fit_dn_model_task.ho_preds
+		File ho_scatter = fit_dn_model_task.ho_scatter
+		File ho_scores = fit_dn_model_task.ho_scores
+		File fit_model_config = fit_dn_model_task.fit_model_config
 	}
 
 	meta {
@@ -43,9 +41,6 @@ task fit_dn_model_task {
 		File model_config
 		File train_samp_file
 		Array[File] pred_samp_files
-		String out_dir
-		String upload_dir
-		String save_dir
 		String pat
 	}
 
@@ -65,19 +60,20 @@ task fit_dn_model_task {
 			--covar_file ~{covar_file} \
 			--pheno_file ~{pheno_file} \
 			--model_config ~{model_config} \
-			--out_dir ~{out_dir} \
 			--train_samples ~{train_samp_file} \
 			--pred_samples ${PRED_SAMP_FILES}
 	>>>
 
 	runtime {
 		container: "gcr.io/ucsd-medicine-cast/fit_dn_model:latest"
-		cpu: 32
-		# can I specify an instance type?
 	}
 
 	output {
-		# Want equivalent of dx upload ${upload_root} -r \
-		#						--destination ${save_dir}
+		File ens_preds = ens_preds.csv
+		File ho_jointplot = ho_jointplot.png
+		File ho_preds = ho_preds.csv
+		File ho_scatter = ho_scatter.png
+		File ho_scores = ho_scores.json
+		File fit_model_config = model_config.json
 	}
 }

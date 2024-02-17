@@ -23,6 +23,8 @@ workflow fit_dn_model {
     output {
         File ens_preds = fit_dn_model_task.ens_preds
         File ho_jointplot = fit_dn_model_task.ho_jointplot
+        File ho_jointplot_male = fit_dn_model_task.ho_jointplot_male
+        File ho_jointplot_female = fit_dn_model_task.ho_jointplot_female
         File ho_preds = fit_dn_model_task.ho_preds
         File ho_scatter = fit_dn_model_task.ho_scatter
         File ho_scores = fit_dn_model_task.ho_scores
@@ -71,6 +73,8 @@ task fit_dn_model_task {
     output {
         File ens_preds = "ens_preds.csv"
         File ho_jointplot = "ho_jointplot.png"
+        File ho_jointplot_male = "ho_male_jointplot.png"
+        File ho_jointplot_female = "ho_female_jointplot.png"
         File ho_preds = "ho_preds.csv"
         File ho_scatter = "ho_scatter.png"
         File ho_scores = "ho_scores.json"

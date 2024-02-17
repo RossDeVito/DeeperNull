@@ -1,6 +1,26 @@
 """Script to launch UKBB DeeperNull model fitting workflow.
 
 Required args:
+parser.add_argument(
+	'-d', '--model_desc', type=str, required=True,
+	help='Name used when saving the model.'
+)
+parser.add_argument(
+	'-j', '--model_config', type=str, required=True,
+	help='Local path to model configuration file.'
+)
+parser.add_argument(
+	'-c', '--covar_set', type=str, required=True,
+	help='Name of the covariate set to use as input. Corresponds to a file in covar_dir.'
+)
+parser.add_argument(
+	'-p', '--pheno', type=str, required=True,
+	help='Name of the phenotype to use as input. Corresponds to a file in pheno_dir.'
+)
+parser.add_argument(
+	'--pat', type=str, required=True,
+	help='Text file containing GitHub personal access token.'
+)
 
 * -d, --model-desc (str): Name used when saving the model.
 * -j, --model-config (str): Local path to model configuration file.
@@ -41,8 +61,10 @@ import time
 
 
 CONFIG_UPLOAD_DIR = '/rdevito/deep_null/model_configs'
-CPU_WORKFLOW_ID = 'workflow-xxxx'	# Need workflow ID to launch
-GPU_WORKFLOW_ID = 'workflow-xxxx'	
+CPU_WORKFLOW_ID = 'workflow-Gg80fZ8Jv7BKb62Zb1xf4Kg4'	# Need workflow ID to launch
+GPU_WORKFLOW_ID = 'workflow-xxxx'
+
+DEFAULT_CPU_INSTANCE = 'mem1_ssd1_v2_x16'
 
 
 def upload_model_config(file_path, upload_dir=CONFIG_UPLOAD_DIR):
@@ -75,7 +97,7 @@ def parse_args():
 		help='Local path to model configuration file.'
 	)
 	parser.add_argument(
-		'-c', '--covar_set', type=str, required=True,
+		'-c', '--covar-set', type=str, required=True,
 		help='Name of the covariate set to use as input. Corresponds to a file in covar_dir.'
 	)
 	parser.add_argument(
@@ -106,27 +128,27 @@ def parse_args():
 		help='Flag to use GPU for training Pytorch models.'
 	)
 	parser.add_argument(
-		'--covar_dir', type=str,
+		'--covar-dir', type=str,
 		default='/rdevito/deep_null/data/covar',
 		help='Path to storage directory containing covariate files.'
 	)
 	parser.add_argument(
-		'--pheno_dir', type=str, 
+		'--pheno-dir', type=str, 
 		default='/rdevito/nonlin_prs/data/pheno_data/pheno',
 		help='Path to storage directory containing phenotype files.'
 	)
 	parser.add_argument(
-		'--samp_dir', type=str,
+		'--samp-dir', type=str,
 		default='/rdevito/deep_null/data/sample',
 		help='Path to storage directory containing sample files.'
 	)
 	parser.add_argument(
-		'--train_samp_fname', type=str,
+		'--train-samp-fname', type=str,
 		default='train_iids.txt',
 		help='Name of the training sample file in samp_dir.'
 	)
 	parser.add_argument(
-		'--pred_samp_fnames', type=str, nargs='+',
+		'--pred-samp-fnames', type=str, nargs='+',
 		default=['val_iids.txt', 'test_iids.txt'],
 		help='Name(s) of the prediction sample file(s) in samp_dir.'
 	)
@@ -147,7 +169,8 @@ def launch_fit(
 ):
 	"""Launch DeeperNull model fitting workflow.
 
-	Calls a WDL workflow that runs the following bash commands:
+	Calls a WDL workflow that runs the following bash commands and uploads
+	the output to storage:
 
 	```
 	# Clone DeeperNull repo
@@ -163,13 +186,8 @@ def launch_fit(
 		--covar_file ${covar_file} \
 		--pheno_file ${pheno_file} \
 		--model_config ${model_config_link} \
-		--out_dir ${output_dir} \
 		--train_samples ${train_samp_file} \
 		--pred_samples ${*pred_samp_files}
-
-	# Upload output files to storage
-	dx upload ${upload_root} -r \
-    	--destination ${save_dir}
 	```
 
 	Args:
@@ -191,15 +209,51 @@ def launch_fit(
 
 	# Get workflow
 	workflow = dxpy.dxworkflow.DXWorkflow(dxid=workflow_id)
+
+	# Get data links for inputs
+	covar_link = dxpy.dxlink(
+		list(dxpy.find_data_objects(
+			name=covar_file.split('/')[-1],
+			folder='/'.join(covar_file.split('/')[:-1]),
+			project=dxpy.PROJECT_CONTEXT_ID
+		))[0]['id']
+	)
+
+	pheno_link = dxpy.dxlink(
+		list(dxpy.find_data_objects(
+			name=pheno_file.split('/')[-1],
+			folder='/'.join(pheno_file.split('/')[:-1]),
+			project=dxpy.PROJECT_CONTEXT_ID
+		))[0]['id']
+	)
+
+	train_samp_link = dxpy.dxlink(
+		list(dxpy.find_data_objects(
+			name=train_samp_file.split('/')[-1],
+			folder='/'.join(train_samp_file.split('/')[:-1]),
+			project=dxpy.PROJECT_CONTEXT_ID
+		))[0]['id']
+	)
+
+	pred_samp_links = [
+		dxpy.dxlink(
+			list(dxpy.find_data_objects(
+				name=fname.split('/')[-1],
+				folder='/'.join(fname.split('/')[:-1]),
+				project=dxpy.PROJECT_CONTEXT_ID
+			))[0]['id']
+		) for fname in pred_samp_files
+	]
 	
 	# Run workflow
+	prefix='stage-common.'
 	workflow_input = {
-		"covar_file": covar_file,
-		"pheno_file": pheno_file,
-		"model_config": model_config_link,
-		"train_samp_file": train_samp_file,
-		"pred_samp_files": pred_samp_files,
-		"pat": pat
+		f"{prefix}covar_file": covar_link,
+		f"{prefix}pheno_file": pheno_link,
+		f"{prefix}model_config": model_config_link,
+		f"{prefix}train_samp_file": train_samp_link,
+		f"{prefix}pred_samp_files": pred_samp_links,
+		f"{prefix}pat": pat
 	}
 	analysis = workflow.run(
 		workflow_input,
@@ -255,7 +309,7 @@ if __name__ == '__main__':
 		workflow_id = GPU_WORKFLOW_ID
 	else:
 		if args.instance_type is None:
-			instance_type = 'mem1_ssd1_x16'
+			instance_type = DEFAULT_CPU_INSTANCE
 		else:
 			instance_type = args.instance_type
 		workflow_id = CPU_WORKFLOW_ID
@@ -273,4 +327,15 @@ if __name__ == '__main__':
 		workflow_id=workflow_id,
 		name=f'{args.model_desc}_{args.pheno}_{args.covar_set}'
 	)
+
+	covar_file = f'/rdevito/deep_null/data/covar/age_sex.tsv'
+	project = 'project-GG25fB8Jv7B928vqK7k6vYY6'
+	fname = 'age_sex.tsv'
+	folder = '/rdevito/deep_null/data/covar'
+	f = dxpy.find_data_objects(
+		name=fname,
+		folder=folder,
+		project=project
+	)
+	r = list(f)[0]
 

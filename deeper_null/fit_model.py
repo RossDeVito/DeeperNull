@@ -88,6 +88,8 @@ from deeper_null.nn_models import NN_MODEL_TYPES, create_nn_model
 from deeper_null.linear_models import LINEAR_MODEL_TYPES, create_linear_model
 
 
+SEX_FEAT_NAME='sex_31'
+
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -236,7 +238,13 @@ def create_model(model_config):
 		raise ValueError('Unknown model type: {}'.format(model_config['model_type']))
 	
 
-def score_and_plot_regression(y_true, y_pred, out_dir, plot_prefix=''):
+def score_and_plot_regression(
+		y_true, 
+		y_pred,
+		out_dir,
+		plot_prefix='',
+		sex=None,
+	):
 	"""Compute regression metrics and plot pred v true scatter.
 
 	Args:
@@ -244,6 +252,8 @@ def score_and_plot_regression(y_true, y_pred, out_dir, plot_prefix=''):
 		y_pred: Predicted values.
 		out_dir: Path to output directory.
 		plot_prefix: Prefix to add to plot file names.
+		sex: Optional array or list-like. If not none, scores 
+			will also be calculated for each sex separately. 
 
 	Returns:
 		scores: Dictionary of scores.
@@ -253,6 +263,93 @@ def score_and_plot_regression(y_true, y_pred, out_dir, plot_prefix=''):
 	scores['mse'] = metrics.mean_squared_error(y_true, y_pred)
 	scores['mae'] = metrics.mean_absolute_error(y_true, y_pred)
 	scores['mape'] = metrics.mean_absolute_percentage_error(y_true, y_pred)
+
+	if sex is not None:
+		# Calculate scores by sex
+		y_true = np.array(y_true)
+		y_pred = np.array(y_pred)
+		sex = np.array(sex)
+
+		male_mask = sex == 1
+		y_true_male = y_true[male_mask]
+		y_pred_male = y_pred[male_mask]
+		y_true_female = y_true[~male_mask]
+		y_pred_female = y_pred[~male_mask]
+
+		# Score
+		scores['r2_male'] = metrics.r2_score(y_true_male, y_pred_male)
+		scores['mse_male'] = metrics.mean_squared_error(y_true_male, y_pred_male)
+		scores['mae_male'] = metrics.mean_absolute_error(y_true_male, y_pred_male)
+		scores['mape_male'] = metrics.mean_absolute_percentage_error(
+			y_true_male, y_pred_male
+		)
+
+		scores['r2_female'] = metrics.r2_score(y_true_female, y_pred_female)
+		scores['mse_female'] = metrics.mean_squared_error(y_true_female, y_pred_female)
+		scores['mae_female'] = metrics.mean_absolute_error(y_true_female, y_pred_female)
+		scores['mape_female'] = metrics.mean_absolute_percentage_error(
+			y_true_female, y_pred_female
+		)
+
+		# Also plot seaborn jointplot with distribution of each
+		# variable on the axes and the scatter in the middle
+		g = sns.jointplot(
+			x=y_true_male,
+			y=y_pred_male, 
+			kind='scatter', 
+			joint_kws={'marker': '.', 'alpha': 0.4}
+		)
+		g.ax_joint.set_aspect('equal', adjustable='box')
+
+		# Get the overall min/max of the data
+		min_val = min(y_true_male.min(), y_pred_male.min())
+		max_val = max(y_true_male.max(), y_pred_male.max())
+
+		# Set the limits
+		g.ax_joint.set_xlim(min_val, max_val)
+		g.ax_joint.set_ylim(min_val, max_val)
+
+		# Add dashed line for x=y
+		g.ax_joint.plot([min_val, max_val], [min_val, max_val], 'k--')
+
+		g.ax_joint.set_xlabel('True')
+		g.ax_joint.set_ylabel('Predicted')
+		g.ax_marg_x.set_title('Pred v True Phenotype (Male)')
+		plt.tight_layout()
+		plt.savefig(
+			os.path.join(out_dir, f'{plot_prefix}_male_jointplot.png'),
+			dpi=300
+		)
+		plt.close()
+
+		g = sns.jointplot(
+			x=y_true_female,
+			y=y_pred_female, 
+			kind='scatter', 
+			joint_kws={'marker': '.', 'alpha': 0.4}
+		)
+		g.ax_joint.set_aspect('equal', adjustable='box')
+
+		# Get the overall min/max of the data
+		min_val = min(y_true_female.min(), y_pred_female.min())
+		max_val = max(y_true_female.max(), y_pred_female.max())
+
+		# Set the limits
+		g.ax_joint.set_xlim(min_val, max_val)
+		g.ax_joint.set_ylim(min_val, max_val)
+
+		# Add dashed line for x=y
+		g.ax_joint.plot([min_val, max_val], [min_val, max_val], 'k--')
+
+		g.ax_joint.set_xlabel('True')
+		g.ax_joint.set_ylabel('Predicted')
+		g.ax_marg_x.set_title('Pred v True Phenotype (Female)')
+		plt.tight_layout()
+		plt.savefig(
+			os.path.join(out_dir, f'{plot_prefix}_female_jointplot.png'),
+			dpi=300
+		)
+		plt.close()
 
 	# Plot pred v true scatter
 	fig, ax = plt.subplots()
@@ -267,7 +364,12 @@ def score_and_plot_regression(y_true, y_pred, out_dir, plot_prefix=''):
 
 	# Also plot seaborn jointplot with distribution of each
 	# variable on the axes and the scatter in the middle
-	g = sns.jointplot(x=y_true, y=y_pred, kind='scatter', joint_kws={'marker': '.', 'alpha': 0.5})
+	g = sns.jointplot(
+		x=y_true,
+		y=y_pred,
+		kind='scatter',
+		joint_kws={'marker': '.', 'alpha': 0.4}
+	)
 	g.ax_joint.set_aspect('equal', adjustable='box')
 
 	# Get the overall min/max of the data
@@ -395,6 +497,10 @@ if __name__ == '__main__':
 		ho_preds = model.predict(ho_X).flatten().tolist()	# type: ignore
 		train_ho_preds.update(dict(zip(ho_X.index, ho_preds)))
 
+		# Also save sex of holdout samples if available
+		if SEX_FEAT_NAME in ho_X.columns:
+			train_ho_preds['sex'] = ho_X[SEX_FEAT_NAME]
+
 		# Make predictions on prediction samples and add to ensemble values
 		# so that they can be averaged later
 		if pred_Xy[0] is not None:
@@ -409,7 +515,14 @@ if __name__ == '__main__':
 
 	# Save predictions on holdout samples
 	ho_preds = pd.DataFrame.from_dict(train_ho_preds, orient='index')
-	ho_preds.columns = ['pred']
+
+	if len(ho_preds.columns) == 1:
+		# If only one column, name it 'pred'
+		ho_preds.columns = ['pred']
+	else:
+		# Also includes 'sex' column
+		ho_preds.columns = ['pred', 'sex']
+
 	ho_preds.index.name = args.sample_id_col
 	ho_preds.reset_index().to_csv(
 		os.path.join(args.out_dir, 'ho_preds.csv'), index=False
@@ -432,7 +545,8 @@ if __name__ == '__main__':
 			ho_preds['true'],
 			ho_preds['pred'],
 			args.out_dir,
-			'ho'
+			'ho',
+			sex=ho_preds.sex.values
 		)
 
 	# Save scores

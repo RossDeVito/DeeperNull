@@ -1,5 +1,11 @@
+# Ignore pat_dn_read.txt anywhere in the repository
+pat_dn_read.txt
+
 # Pytorch Lighting logs
 */lightning_logs/
+
+# UKBB RAP dx compiler
+ukbb_rap_workflows/dx_compile/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

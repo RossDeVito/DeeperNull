@@ -67,7 +67,7 @@ Example usage:
 		--train_samples ../data/dev/train_samples.txt \
 		--pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 
-		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/deep_null_config.json -o ../../test_out --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
+		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/lin_config.json -o ../../test_out --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 		
 """
 import argparse
@@ -473,7 +473,9 @@ if __name__ == '__main__':
 	# Fit and make predictions with n-fold cross validation.
 	print('Fitting model with {} folds.'.format(args.n_folds))
 	train_ho_preds = dict()
+	train_ho_sex = dict()
 	ensemble_preds = defaultdict(lambda: [])
+	includes_sex = False
 
 	for i in tqdm(range(args.n_folds), desc="Training folds", total=args.n_folds):
 		# Get training and holdout samples.
@@ -499,7 +501,10 @@ if __name__ == '__main__':
 
 		# Also save sex of holdout samples if available
 		if SEX_FEAT_NAME in ho_X.columns:
-			train_ho_preds['sex'] = ho_X[SEX_FEAT_NAME]
+			includes_sex = True
+			train_ho_sex.update(dict(
+				zip(ho_X.index, ho_X[SEX_FEAT_NAME].tolist())
+			))
 
 		# Make predictions on prediction samples and add to ensemble values
 		# so that they can be averaged later
@@ -515,13 +520,7 @@ if __name__ == '__main__':
 
 	# Save predictions on holdout samples
 	ho_preds = pd.DataFrame.from_dict(train_ho_preds, orient='index')
-
-	if len(ho_preds.columns) == 1:
-		# If only one column, name it 'pred'
-		ho_preds.columns = ['pred']
-	else:
-		# Also includes 'sex' column
-		ho_preds.columns = ['pred', 'sex']
+	ho_preds.columns = ['pred']
 
 	ho_preds.index.name = args.sample_id_col
 	ho_preds.reset_index().to_csv(
@@ -532,6 +531,12 @@ if __name__ == '__main__':
 	ho_preds = ho_preds.join(train_Xy[1])
 	ho_preds = ho_preds.rename(columns={train_Xy[1].columns[0]: 'true'})
 
+	# Join sex if available
+	if includes_sex:
+		ho_sex = pd.DataFrame.from_dict(train_ho_sex, orient='index')
+		ho_sex.columns = ['sex']
+		ho_preds = ho_preds.join(ho_sex)
+
 	# Calculate metrics
 	if args.binary_pheno:
 		scores = score_and_plot_binary(
@@ -541,12 +546,15 @@ if __name__ == '__main__':
 			'ho'
 		)
 	else:
+		sex = None
+		if 'sex' in ho_preds.columns:
+			sex = ho_preds.sex.values
 		scores = score_and_plot_regression(
 			ho_preds['true'],
 			ho_preds['pred'],
 			args.out_dir,
 			'ho',
-			sex=ho_preds.sex.values
+			sex=sex
 		)
 
 	# Save scores

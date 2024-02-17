@@ -57,7 +57,6 @@ Optional args:
 import argparse
 import dxpy
 import sys
-import time
 
 
 CONFIG_UPLOAD_DIR = '/rdevito/deep_null/model_configs'

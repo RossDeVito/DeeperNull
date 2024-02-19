@@ -64,6 +64,7 @@ CPU_WORKFLOW_ID = 'workflow-Gg8QXP0Jv7BJY20GjkpPv85P'
 GPU_WORKFLOW_ID = 'workflow-Gg9xqxjJv7BPyFJFbPKK3ZB2'
 
 DEFAULT_CPU_INSTANCE = 'mem1_ssd1_v2_x16'
+DEFAULT_GPU_INSTANCE = 'mem2_ssd1_gpu_x16'
 
 
 def upload_model_config(file_path, upload_dir=CONFIG_UPLOAD_DIR):
@@ -302,7 +303,7 @@ if __name__ == '__main__':
 	# Set instance type and workflow ID (CPU or GPU version)
 	if args.gpu:
 		if args.instance_type is None:
-			instance_type = 'mem1_ssd1_gpu_x16'
+			instance_type = DEFAULT_GPU_INSTANCE
 		else:
 			instance_type = args.instance_type
 		workflow_id = GPU_WORKFLOW_ID

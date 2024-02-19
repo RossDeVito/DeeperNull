@@ -4,7 +4,7 @@
 ARG PYTHON_VERSION=3.10
 ARG CUDA_VERSION=11.8.0
 
-ARG BASE_IMAGE=pytorchlightning/pytorch_lightning:base-cuda-py${PYTHON_VERSION}-torch2.2-cuda${CUDA_VERSION}
+ARG BASE_IMAGE=pytorchlightning/pytorch_lightning:base-cuda-py${PYTHON_VERSION}-torch2.0-cuda${CUDA_VERSION}
 
 # Base image
 FROM ${BASE_IMAGE}

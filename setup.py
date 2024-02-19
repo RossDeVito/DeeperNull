@@ -17,7 +17,7 @@ setup(
         'scikit-learn',
         'scipy',
         'seaborn',
-		'torch>=2.1',
+		'torch>=2.0',
 		'torchmetrics',
 		'tqdm',
 		'xgboost',

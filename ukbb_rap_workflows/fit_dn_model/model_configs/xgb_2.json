@@ -1,0 +1,14 @@
+{
+    "model_type": "xgb_regressor",
+    "model_args": {
+        "eval_metric": ["rmse", "mae"],
+        "n_estimators": 1000,
+        "max_depth": 4,
+        "learning_rate": 0.25,
+        "early_stopping_rounds": 50,
+        "verbosity": 1
+    },
+    "fit_args": {
+        "val_frac": 0.1
+    }
+}

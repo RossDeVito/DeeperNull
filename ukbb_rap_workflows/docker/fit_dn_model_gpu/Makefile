@@ -1,6 +1,6 @@
 # Definitions
 project_id = ucsd-medicine-cast
-identifier = fit_dn_model
+identifier = fit_dn_model_gpu
 version = 0.0.1
 
 # GCR prefix
@@ -12,7 +12,7 @@ tag = $(version)
 
 # Build
 build:
-	docker build --platform linux/amd64 -t $(name):$(tag) .
+	docker build -t $(name):$(tag) .
 	docker tag $(name):$(tag) $(name):latest
 
 # Push

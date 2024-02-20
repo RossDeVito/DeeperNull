@@ -20,9 +20,9 @@ RUN pip3 install \
 	xgboost
 
 # Check if the installation was successful
-RUN python3 -c "import torch; print(torch.__version__, flush=True); print(torch.cuda.is_available(), flush=True)" >> output.txt
+RUN python3 -c "import torch; print(torch.__version__, flush=True); print(torch.cuda.is_available(), flush=True)"
 
-COPY output.txt .
+# COPY output.txt .
 
 # # Check if the installation was successful
 # RUN python3 -c "import torch; print(torch.__version__, flush=True)"

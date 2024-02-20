@@ -55,6 +55,11 @@ task fit_dn_model_gpu_task {
         pip3 install --no-deps .
         cd ..
 
+        # Check stuff
+        pip3 list
+        print(os.environ)
+        echo $PATH
+
         PRED_SAMP_FILES=(~{sep=' ' pred_samp_files}) # Load array into bash variable
 
         # Run DeeperNull model fitting

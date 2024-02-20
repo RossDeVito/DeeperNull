@@ -1,5 +1,5 @@
 # Dockerfile for GPU DeepNull training
-# docker run -it --rm deepernull/fit_dn_model_gpu:latest /bin/bash
+# docker run -it --rm gcr.io/ucsd-medicine-cast/fit_dn_model_gpu:latest /bin/bash
 
 # Base image from NVIDIA
 FROM nvcr.io/nvidia/pytorch:21.08-py3

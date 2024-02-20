@@ -16,8 +16,9 @@ PHENO=standing_height_50
 
 VERSION=V2
 
-GPU=true
-CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16
+GPU=false
+# CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16
+CPU_INSTANCE_TYPE=mem1_ssd1_v2_x36
 
 
 PAT_FNAME=pat_dn_read.txt

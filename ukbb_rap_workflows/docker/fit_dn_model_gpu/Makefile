@@ -12,7 +12,7 @@ tag = $(version)
 
 # Build
 build:
-	docker build --no-cached -t $(name):$(tag) .
+	docker build --no-cache -t $(name):$(tag) .
 	docker tag $(name):$(tag) $(name):latest
 
 # Push

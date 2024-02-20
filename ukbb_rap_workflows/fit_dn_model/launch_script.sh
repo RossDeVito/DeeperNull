@@ -1,22 +1,22 @@
 # Launch Deep Null training
 
-MODEL_CONFIG=xgb_3
-# MODEL_CONFIG=deepnull_orig_1
+# MODEL_CONFIG=xgb_3
+MODEL_CONFIG=deepnull_orig_1
 CONFIG_DIR=model_configs
 
-# COVAR_SET=age_sex
+COVAR_SET=age_sex
 # COVAR_SET=age_sex_pc
 # COVAR_SET=age_sex_birth_coords
-COVAR_SET=age_sex_birth_coords_pc
+# COVAR_SET=age_sex_birth_coords_pc
 
-# PHENO=standing_height_50
+PHENO=standing_height_50
 # PHENO=body_fat_percentage_23099
 # PHENO=platelet_count_30080
-PHENO=glycated_haemoglobin_30750
+# PHENO=glycated_haemoglobin_30750
 
 VERSION=V2
 
-GPU=false
+GPU=true
 CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16
 
 

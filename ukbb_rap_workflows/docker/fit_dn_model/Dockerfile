@@ -40,7 +40,7 @@ RUN pip3 install --no-cache-dir \
 	scikit-learn \
 	scipy \
 	seaborn \
-	torch>=2.1 \
+	torch>=2.0 \
 	torchmetrics \
 	tqdm \
 	xgboost

@@ -55,6 +55,21 @@ task fit_dn_model_gpu_task {
         pip3 install --no-deps .
         cd ..
 
+        # Install python packages
+        pip3 install \
+            dxpy \
+            matplotlib \
+            numpy \
+            pandas \
+            pytorch-lightning \
+            scikit-learn \
+            scipy \
+            seaborn \
+            torch==1.10.0a0+3fd9dcf \
+            torchmetrics \
+            tqdm \
+            xgboost
+
         PRED_SAMP_FILES=(~{sep=' ' pred_samp_files}) # Load array into bash variable
 
         # Run DeeperNull model fitting

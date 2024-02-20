@@ -4,16 +4,16 @@
 # Base image from NVIDIA
 FROM nvcr.io/nvidia/pytorch:21.08-py3
 
-# # Install Python packages for DeeperNull
-# RUN pip3 install --no-cache-dir \
-# 	dxpy \
-# 	matplotlib \
-# 	numpy \
-# 	pandas \
-# 	pytorch-lightning \
-# 	scikit-learn \
-# 	scipy \
-# 	seaborn \
-# 	torchmetrics \
-# 	tqdm \
-# 	xgboost
+# Install Python packages for DeeperNull
+RUN pip3 install \
+	dxpy \
+	matplotlib \
+	numpy \
+	pandas \
+	pytorch-lightning \
+	scikit-learn \
+	scipy \
+	seaborn \
+	torchmetrics \
+	tqdm \
+	xgboost

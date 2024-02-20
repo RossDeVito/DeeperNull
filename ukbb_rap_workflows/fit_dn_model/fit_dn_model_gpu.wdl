@@ -1,6 +1,6 @@
 version 1.0
 
-workflow fit_dn_model {
+workflow fit_dn_model_gpu {
     input {
         File covar_file
         File pheno_file
@@ -10,7 +10,7 @@ workflow fit_dn_model {
         String pat
     }
 
-    call fit_dn_model_task {
+    call fit_dn_model_gpu_task {
         input:
             covar_file=covar_file,
             pheno_file=pheno_file,
@@ -21,14 +21,14 @@ workflow fit_dn_model {
     }
 
     output {
-        File ens_preds = fit_dn_model_task.ens_preds
-        File ho_jointplot = fit_dn_model_task.ho_jointplot
-        File ho_jointplot_male = fit_dn_model_task.ho_jointplot_male
-        File ho_jointplot_female = fit_dn_model_task.ho_jointplot_female
-        File ho_preds = fit_dn_model_task.ho_preds
-        File ho_scatter = fit_dn_model_task.ho_scatter
-        File ho_scores = fit_dn_model_task.ho_scores
-        File fit_model_config = fit_dn_model_task.fit_model_config
+        File ens_preds = fit_dn_model_gpu_task.ens_preds
+        File ho_jointplot = fit_dn_model_gpu_task.ho_jointplot
+        File ho_jointplot_male = fit_dn_model_gpu_task.ho_jointplot_male
+        File ho_jointplot_female = fit_dn_model_gpu_task.ho_jointplot_female
+        File ho_preds = fit_dn_model_gpu_task.ho_preds
+        File ho_scatter = fit_dn_model_gpu_task.ho_scatter
+        File ho_scores = fit_dn_model_gpu_task.ho_scores
+        File fit_model_config = fit_dn_model_gpu_task.fit_model_config
     }
 
     meta {
@@ -36,7 +36,7 @@ workflow fit_dn_model {
     }
 }
 
-task fit_dn_model_task {
+task fit_dn_model_gpu_task {
     input {
         File covar_file
         File pheno_file

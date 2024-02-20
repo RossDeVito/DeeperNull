@@ -52,7 +52,7 @@ task fit_dn_model_gpu_task {
 
         # Install DeeperNull
         cd DeeperNull
-        pip3 install .
+        pip3 install --no-deps .
         cd ..
 
         PRED_SAMP_FILES=(~{sep=' ' pred_samp_files}) # Load array into bash variable

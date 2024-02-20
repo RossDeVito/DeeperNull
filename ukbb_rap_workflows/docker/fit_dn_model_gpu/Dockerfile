@@ -14,6 +14,7 @@ RUN pip3 install \
 	scikit-learn \
 	scipy \
 	seaborn \
+	torch==1.10.0a0+3fd9dcf \
 	torchmetrics \
 	tqdm \
 	xgboost

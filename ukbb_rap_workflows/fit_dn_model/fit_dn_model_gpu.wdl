@@ -55,6 +55,9 @@ task fit_dn_model_gpu_task {
         pip3 install --no-deps .
         cd ..
 
+        # Check pandas version
+        python3 -c "import pandas; print(pandas.__version__, flush=True)"
+
         PRED_SAMP_FILES=(~{sep=' ' pred_samp_files}) # Load array into bash variable
 
         # Run DeeperNull model fitting

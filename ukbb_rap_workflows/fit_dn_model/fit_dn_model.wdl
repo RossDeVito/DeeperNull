@@ -29,6 +29,11 @@ workflow fit_dn_model {
         File ho_scatter = fit_dn_model_task.ho_scatter
         File ho_scores = fit_dn_model_task.ho_scores
         File fit_model_config = fit_dn_model_task.fit_model_config
+        File? training_curve_0 = fit_dn_model_task.training_curve_0
+        File? training_curve_1 = fit_dn_model_task.training_curve_1
+        File? training_curve_2 = fit_dn_model_task.training_curve_2
+        File? training_curve_3 = fit_dn_model_task.training_curve_3
+        File? training_curve_4 = fit_dn_model_task.training_curve_4
     }
 
     meta {
@@ -47,6 +52,8 @@ task fit_dn_model_task {
     }
 
     command <<<
+        pip3 list
+
         # Clone DeeperNull repo
         git clone https://~{pat}@github.com/RossDeVito/DeeperNull.git
 
@@ -79,5 +86,10 @@ task fit_dn_model_task {
         File ho_scatter = "ho_scatter.png"
         File ho_scores = "ho_scores.json"
         File fit_model_config = "model_config.json"
+        File? training_curve_0 = "training_curve_0.png" 
+        File? training_curve_1 = "training_curve_1.png" 
+        File? training_curve_2 = "training_curve_2.png" 
+        File? training_curve_3 = "training_curve_3.png"
+        File? training_curve_4 = "training_curve_4.png"
     }
 }

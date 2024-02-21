@@ -44,3 +44,6 @@ RUN pip3 install --no-cache-dir \
 	torchmetrics \
 	tqdm \
 	xgboost
+
+# List installed packages
+RUN pip3 list

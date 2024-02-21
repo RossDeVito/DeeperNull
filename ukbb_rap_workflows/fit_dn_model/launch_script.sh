@@ -1,7 +1,7 @@
 # Launch Deep Null training
 
-# MODEL_CONFIG=xgb_3
-MODEL_CONFIG=deepnull_orig_1
+MODEL_CONFIG=ridge_2
+# MODEL_CONFIG=deepnull_orig_1
 CONFIG_DIR=model_configs
 
 COVAR_SET=age_sex
@@ -17,8 +17,8 @@ PHENO=standing_height_50
 VERSION=V2
 
 GPU=false
-# CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16
-CPU_INSTANCE_TYPE=mem1_ssd1_v2_x36
+CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16
+# CPU_INSTANCE_TYPE=mem1_ssd1_v2_x36
 
 
 PAT_FNAME=pat_dn_read.txt

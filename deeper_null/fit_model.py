@@ -67,7 +67,7 @@ Example usage:
 		--train_samples ../data/dev/train_samples.txt \
 		--pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 
-		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/lin_config.json -o ../../test_out --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
+		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/deep_null_config.json -o ../../test_out --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 		
 """
 import argparse
@@ -227,11 +227,11 @@ def load_covar_pheno_data(
 			return (train_covar_df, train_pheno_df), (pred_covar_df, pred_pheno_df)
 		
 
-def create_model(model_config):
+def create_model(model_config, out_dir='.'):
 	if model_config['model_type'].lower() in XGB_MODEL_TYPES:
 		return create_xgb_model(model_config)
 	elif model_config['model_type'].lower() in NN_MODEL_TYPES:
-		return create_nn_model(model_config)
+		return create_nn_model(model_config, out_dir=out_dir)
 	elif model_config['model_type'].lower() in LINEAR_MODEL_TYPES:
 		return create_linear_model(model_config)
 	else:
@@ -490,7 +490,7 @@ if __name__ == '__main__':
 		ho_y = train_Xy[1].loc[ho_samp_ids]
 
 		# Create model
-		model = create_model(model_config)
+		model = create_model(model_config, out_dir=args.out_dir)
 
 		# Fit model
 		model.fit(train_X, train_y)

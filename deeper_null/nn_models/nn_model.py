@@ -35,7 +35,12 @@ Model configuration JSON should have the following keys:
 
 """
 
+import os
 from copy import deepcopy
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, random_split
@@ -86,6 +91,14 @@ class BaseNN(pl.LightningModule):
 		self.train_metrics(y_hat, y)
 		self.log_dict(
 			self.train_metrics, on_epoch=True, prog_bar=True
+		)
+
+		# Log learning rate
+		self.log(
+			'learning_rate',
+			self.trainer.optimizers[0].param_groups[0]['lr'],
+			on_epoch=True,
+			prog_bar=True
 		)
 		return loss
 
@@ -214,9 +227,19 @@ class NNModel:
 	data loaders using batch_size.
 	"""
 
-	def __init__(self, config):
-		"""Initialize neural network model."""
+	def __init__(self, config, out_dir=None):
+		"""Initialize neural network model.
+		
+		Args:
+			config (dict): model configuration. See module docstring for
+				details.
+			out_dir (str, optional): output directory. If not None,
+				CSVLogger will save logs to this directory and save
+				training curve plots. Default is None.
+		"""
 		self.config = deepcopy(config)
+		self.out_dir = out_dir
+		print(self.out_dir)
 
 		# Set default values for lr, batch_size, max_epochs, patience,
 		# min_delta, and verbose.
@@ -317,6 +340,15 @@ class NNModel:
 			)
 
 		# Train model
+		if self.out_dir is not None:
+			logger = pl.loggers.CSVLogger(
+				save_dir=self.out_dir,
+				name=None,
+				flush_logs_every_n_steps=1
+			)
+		else:
+			logger = None
+
 		if val_dataset is not None:
 			self.trainer = pl.Trainer(
 				max_epochs=self.config['train_args']['max_epochs'],
@@ -327,6 +359,7 @@ class NNModel:
 						refresh_rate=self.config['train_args']['pbar_refresh_rate']
 					)
 				],
+				logger=logger
 			)
 			self.trainer.fit(self.model, train_loader, val_loader)
 		else:
@@ -338,8 +371,59 @@ class NNModel:
 						refresh_rate=self.config['train_args']['pbar_refresh_rate']
 					)
 				],
+				logger=logger
 			)
 			self.trainer.fit(self.model, train_loader)
+
+		if self.out_dir is not None:
+			version_num = self.trainer.logger.version
+			log_dir = self.trainer.logger.log_dir
+
+			# Load log CSV
+			log_csv = pd.read_csv(
+				os.path.join(log_dir, 'metrics.csv')
+			)
+
+			# Plot training curve with train and val loss
+			plt.figure(figsize=(12, 8), dpi=300)
+
+			vals = log_csv[['epoch', 'train_loss_epoch']].dropna()
+			plt.plot(
+				vals['epoch'],
+				vals['train_loss_epoch'],
+				'-',
+				label='Train Loss',
+			)
+			if 'val_loss' in log_csv:
+				vals = log_csv[['epoch', 'val_loss']].dropna()
+				plt.plot(
+					vals['epoch'],
+					vals['val_loss'],
+					'-',
+					label='Val Loss',
+				)
+			plt.xlabel('Epoch')
+			plt.ylabel('Loss')
+			plt.title('Training Curves')
+			plt.legend()
+
+			# Add learning rate plot (secondary log-scaled y-axis)
+			ax2 = plt.twinx()
+			vals = log_csv[['epoch', 'learning_rate_epoch']].dropna()
+			ax2.semilogy(
+				vals['epoch'],
+				vals['learning_rate_epoch'],
+				'--',
+				# color='orange',
+				label='Learning Rate'
+			)
+			ax2.set_ylabel('Learning Rate (Log Scale)')
+
+			plt.tight_layout()
+			plt.savefig(
+				os.path.join(self.out_dir, f'training_curve_{version_num}.png')
+			)
+			plt.close()
 
 	def predict(self, X):
 		"""Make predictions."""
@@ -367,6 +451,6 @@ class NNModel:
 		return preds[0]
 
 
-def create_nn_model(config):
+def create_nn_model(config, out_dir=None):
 	"""Create neural network model."""
-	return NNModel(config)
+	return NNModel(config, out_dir)

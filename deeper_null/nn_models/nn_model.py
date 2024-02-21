@@ -402,6 +402,7 @@ class NNModel:
 					'-',
 					label='Val Loss',
 				)
+			plt.semilogy()
 			plt.xlabel('Epoch')
 			plt.ylabel('Loss')
 			plt.title('Training Curves')

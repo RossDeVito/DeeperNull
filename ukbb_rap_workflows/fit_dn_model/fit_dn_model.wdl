@@ -74,7 +74,7 @@ task fit_dn_model_task {
     >>>
 
     runtime {
-        container: "gcr.io/ucsd-medicine-cast/fit_dn_model:latest"
+        docker: "gcr.io/ucsd-medicine-cast/fit_dn_model:latest"
     }
 
     output {

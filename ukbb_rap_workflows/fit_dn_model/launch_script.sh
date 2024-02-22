@@ -1,7 +1,7 @@
 # Launch Deep Null training
 
 # MODEL_CONFIG=ridge_2
-MODEL_CONFIG=deepnull_eswp_1
+MODEL_CONFIG=deepnull_es_1
 CONFIG_DIR=model_configs
 
 # COVAR_SET=age_sex

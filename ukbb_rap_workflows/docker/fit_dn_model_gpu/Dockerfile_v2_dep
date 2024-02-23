@@ -1,8 +1,12 @@
 # Dockerfile for GPU DeepNull training
-# docker run -it --rm gcr.io/ucsd-medicine-cast/fit_dn_model_gpu:latest /bin/bash
 
-# Base image from NVIDIA
-FROM nvcr.io/nvidia/pytorch:21.08-py3
+ARG PYTHON_VERSION=3.11
+ARG TORCH_VERSION=2.2
+ARG CUDA_VERSION=12.1.0
+
+# Pytorch Lightning base image
+ARG TAG=base-cuda-py${PYTHON_VERSION}-torch${TORCH_VERSION}-cuda${CUDA_VERSION}
+FROM pytorchlightning/pytorch_lightning:${TAG}
 
 # Install Python packages for DeeperNull
 RUN pip3 install \
@@ -14,12 +18,12 @@ RUN pip3 install \
 	scikit-learn \
 	scipy \
 	seaborn \
-	torch==1.10.0a0+3fd9dcf \
+	torch \
 	torchmetrics \
 	tqdm \
 	xgboost
 
-# Check if the installation was successful
+# List installed packages
 RUN pip3 list
 RUN python3 -V
 RUN python3 -c "import torch; print(torch.__version__, flush=True); print(torch.cuda.is_available(), flush=True)"

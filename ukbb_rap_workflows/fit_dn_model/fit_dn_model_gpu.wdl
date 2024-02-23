@@ -70,7 +70,7 @@ task fit_dn_model_gpu_task {
     >>>
 
     runtime {
-        container: "gcr.io/ucsd-medicine-cast/fit_dn_model_gpu:latest"
+        docker: "gcr.io/ucsd-medicine-cast/fit_dn_model_gpu:latest"
     }
 
     output {

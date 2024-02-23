@@ -12,7 +12,11 @@ tag = $(version)
 
 # Build
 build:
-	docker build --progress=plain --no-cache -t $(name):$(tag) .
+	docker build \
+		--progress=plain \
+		--no-cache \
+		--platform linux/amd64 \
+		-t $(name):$(tag) .
 	docker tag $(name):$(tag) $(name):latest
 
 # Push

@@ -61,7 +61,7 @@ import sys
 
 CONFIG_UPLOAD_DIR = '/rdevito/deep_null/model_configs'
 CPU_WORKFLOW_ID = 'workflow-GgFvP88Jv7B03Y9PY4XzyBz6'
-GPU_WORKFLOW_ID = 'workflow-GgBQpKjJv7BKKF68PXZg73fz'
+GPU_WORKFLOW_ID = 'workflow-GgFyK2QJv7BFgX1x8KG951VJ'
 
 DEFAULT_CPU_INSTANCE = 'mem1_ssd1_v2_x16'
 DEFAULT_GPU_INSTANCE = 'mem2_ssd1_gpu_x16'

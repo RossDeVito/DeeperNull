@@ -1,0 +1,22 @@
+{
+    "model_type": "nn_regressor",
+    "nn_type": "deep_null",
+    "nn_args": {
+        "hidden_layers": [64, 32, 16]
+    },
+    "train_args": {
+        "max_epochs": 5000,
+        "verbose": true,
+        "dataloader_workers": 14,
+        "lr": 1e-4,
+        "batch_size": 1024,
+        "val_frac": 0.1,
+        "reduce_lr_on_plateau": true,
+        "reduce_lr_on_plateau_args": {
+            "patience": 25
+        },
+        "patience": 75,
+        "optimizer_type": "adamw",
+        "dataset_type": "coord_scaling_tabular"
+    }
+}

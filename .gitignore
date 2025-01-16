@@ -1,11 +1,27 @@
+# Docker components
+**/docker/plink2
+**/docker/PRSice_linux
+**/docker/*.py
+**/docker/*.R
+
+**/ukb_rap_workflows/resources/plink2
+**/ukb_rap_workflows/resources/PRSice_linux
+
+**/ukb_rap_workflows/dn_eval_local/tmp
+**/ukb_rap_workflows/dn_eval_local/scores
+**/ukb_rap_workflows/PRS_eval_local/tmp
+**/ukb_rap_workflows/PRS_eval_local/scores
+
+**/ukb_rap_workflows/PRS_PRScs/LD_files/
+
 # Ignore pat_dn_read.txt anywhere in the repository
 pat_dn_read.txt
 
 # Pytorch Lighting logs
-*/lightning_logs/
+**/lightning_logs/
 
 # UKBB RAP dx compiler
-ukbb_rap_workflows/dx_compile/
+ukb_rap_workflows/dx_compile/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

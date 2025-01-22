@@ -22,7 +22,9 @@ Optional args that if given, will be used to merge null model predictions
 * --test-val-pred-file: Path to the null model prediction file for the
 	validation/test set.
 * --string-month: If flag is present, 'month_of_year' is output as a string
-	instead of an integer.
+	instead of an integer. Cannot be used with --one-hot-month.
+* --one-hot-month: If flag is present, 'month_of_year' is one-hot encoded.
+	Cannot be used with --string-month.
 """
 
 import argparse
@@ -69,7 +71,13 @@ def parse_args():
 		'--string-month',
 		action='store_true',
 		help='If flag is present, "month_of_year" is output as a string instead '
-		'of an integer.'
+		'of an integer. Cannot be used with --one-hot-month.'
+	)
+	parser.add_argument(
+		'--one-hot-month',
+		action='store_true',
+		help='If flag is present, "month_of_year" is one-hot encoded. '
+		'Cannot be used with --string-month.'
 	)
 	return parser.parse_args()
 
@@ -78,6 +86,12 @@ if __name__ == '__main__':
 
 	args = parse_args()
 	pprint(vars(args))
+
+	# Check for mutually exclusive flags
+	if args.string_month and args.one_hot_month:
+		raise ValueError(
+			'--string-month and --one-hot-month flags are mutually exclusive.'
+		)
 
 	# Load base covariates file
 	covar_df = pd.read_csv(
@@ -137,8 +151,16 @@ if __name__ == '__main__':
 			else:
 				print(f'No "{time_field}" column found in covariate file.')
 
+	# Modify month
 	if args.string_month and 'month_of_year' in covar_df.columns:
-			covar_df['month_of_year'] = covar_df['month_of_year'].apply(lambda x: 'm' + str(x))
+			covar_df['month_of_year'] = covar_df['month_of_year'].apply(
+				lambda x: 'm' + str(x)
+			)
+	elif args.one_hot_month and 'month_of_year' in covar_df.columns:
+		covar_df = pd.get_dummies(
+			covar_df,
+			columns=['month_of_year'],
+		)
 	elif 'month_of_year' in covar_df.columns:
 		covar_df['month_of_year'] = covar_df['month_of_year'].astype(int)
 	else:

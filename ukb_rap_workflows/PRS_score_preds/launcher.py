@@ -85,28 +85,17 @@ if __name__ == '__main__':
 
 	args = parse_args()
 
-	# Set model output dir and model dir
-	if args.model_type == 'prsice':
-		raise NotImplementedError('PRSice2 not implemented yet')
-		model_out_dir = '/rdevito/nonlin_prs/sum_stats_prs/PRSice2/prsice2_output'
-		model_dir = f'{model_out_dir}/{args.pheno_name}'
-		if args.wb:
-			model_dir = f'{model_dir}_wb'
 	# If first part of args.model_type is 'basil'
-	elif args.model_type.startswith('basil_'):
+	if args.model_type.startswith('basil_'):
 		model_out_dir = f'/rdevito/deep_null/output/PRS_BASIL/{args.pheno_name}'
 		save_subdir_name = args.model_type.replace('basil_', '')
 		model_dir = f'{model_out_dir}/{save_subdir_name}'
 
-	# If first part of args.model_type is 'automl'
-	elif args.model_type.startswith('automl'):
-		raise NotImplementedError('AutoML not implemented yet')
-		model_out_dir = '/rdevito/nonlin_prs/automl_prs/output'
-		model_desc = '_'.join(args.model_type.split('_')[1:])
-		model_dir = f'{model_out_dir}/{args.pheno_name}'
-		if args.wb:
-			model_dir = f'{model_dir}_wb'
-		model_dir = f'{model_dir}_{model_desc}'
+	elif args.model_type.startswith('prscs'):
+		model_out_dir = f'/rdevito/deep_null/output/PRS_PRScs/{args.pheno_name}'
+		save_subdir_name = args.model_type.replace('prscs_', '')
+		model_dir = f'{model_out_dir}/{save_subdir_name}'
+
 	else:
 		raise ValueError(f'Invalid model type: {args.model_type}')
 	

@@ -7,9 +7,13 @@ workflow prs_prscs {
 		File geno_fam
 		File covar_file
 		File pheno_file
-		File split_file
+		File train_samples
+		File val_samples
+		File test_samples
 		Array[File] ld_files
 		Int sample_size
+		File? null_train_pred_file
+		File? null_testval_pred_file
 	}
 
 	call gwas_plink2_task {
@@ -19,7 +23,9 @@ workflow prs_prscs {
 			geno_fam = geno_fam,
 			covar_file = covar_file,
 			pheno_file = pheno_file,
-			split_file = split_file
+			split_file = train_samples,
+			null_train_pred_file = null_train_pred_file,
+			null_testval_pred_file = null_testval_pred_file
 	}
 
 	call prs_prscs_task {
@@ -40,15 +46,33 @@ workflow prs_prscs {
 			weights = prs_prscs_task.prscs_output
 	}
 
+	call fit_wrapper_model {
+		input:
+			covar_file = covar_file,
+			pheno_file = pheno_file,
+			score_file = score_with_plink.scores,
+			val_samples = val_samples,
+			test_samples = test_samples,
+			null_train_pred_file = null_train_pred_file,
+			null_testval_pred_file = null_testval_pred_file
+	}
+
+	call score_preds {
+		input:
+			val_preds = fit_wrapper_model.val_preds,
+			test_preds = fit_wrapper_model.test_preds,
+			pheno_file = pheno_file
+	}
+
 	output {
-		Array[File] gwas_output = gwas_plink2_task.glm_linear_output
-		File gwas_runtime_json = gwas_plink2_task.runtime_json
-		File prscs_output = prs_prscs_task.prscs_output
-		File scores = score_with_plink.scores
+		File val_preds = fit_wrapper_model.val_preds
+		File test_preds = fit_wrapper_model.test_preds
+		File scores_json = score_preds.scores_json
+		Array[File] plots = score_preds.plots
 	}
 
 	meta {
-		description: "Run prscs PRS using BED files for GWAS"
+		description: "Run prscs PRS using BED files for GWAS, then scores predictions"
 	}
 }
 
@@ -60,6 +84,8 @@ task gwas_plink2_task {
 		File covar_file
 		File pheno_file
 		File split_file
+		File? null_train_pred_file
+		File? null_testval_pred_file
 	}
 
 	command <<<
@@ -67,14 +93,15 @@ task gwas_plink2_task {
 
 		# Preprocess covariate file
 		python3 /usr/local/prepro_covar.py \
-		--covar-file ~{covar_file} \
-		--rescale-coords \
-		--rescale-time \
-		--string-month
+			--covar-file ~{covar_file} \
+			--rescale-coords \
+			--rescale-time \
+			--string-month \
+			~{if defined(null_train_pred_file) then "--train-pred-file " + null_train_pred_file else ""} \
+			~{if defined(null_testval_pred_file) then "--test-val-pred-file " + null_testval_pred_file else ""} \
+			~{if defined(null_train_pred_file) then "--rescale-preds" else ""}
 
-		# Time GWAS
-		START_TIME=$(date +%s)
-
+		# Run GWAS using plink2
 		plink2 --glm 'hide-covar' \
 			--bed ~{geno_bed} \
 			--bim ~{geno_bim} \
@@ -85,10 +112,6 @@ task gwas_plink2_task {
 			--vif 1000000 \
 			--out gwas_plink2
 
-		# Save runtime as JSON as 'runtime_seconds' key
-		END_TIME=$(date +%s)
-		ELAPSED_TIME=$((END_TIME-START_TIME))
-		echo "{\"runtime_seconds\": $ELAPSED_TIME}" > runtime.json
 	>>>
 
 	runtime {
@@ -98,7 +121,6 @@ task gwas_plink2_task {
 	output {
 		File summary_stats = glob("gwas_plink2.*.glm.linear")[0]
 		Array[File] glm_linear_output = glob("gwas_plink2*")
-		File runtime_json = "runtime.json"
 	}
 }
 
@@ -186,7 +208,7 @@ task score_with_plink {
 			--bed ~{geno_bed} \
 			--bim ~{geno_bim} \
 			--fam ~{geno_fam} \
-			--score ~{weights} 2 4 6 \
+			--score ~{weights} 2 4 6 ignore-dup-ids cols=+scoresums \
 			--out plink2_score
 	>>>
 
@@ -196,5 +218,75 @@ task score_with_plink {
 
 	output {
 		File scores = glob("*.sscore")[0]
+	}
+}
+
+task fit_wrapper_model {
+	input {
+		File covar_file
+		File pheno_file
+		File score_file
+		File val_samples
+		File test_samples
+		File? null_train_pred_file
+		File? null_testval_pred_file
+	}
+
+	command <<<
+		# Preprocess covariate file
+		python3 /usr/local/prepro_covar.py \
+			--covar-file ~{covar_file} \
+			--rescale-coords \
+			--rescale-time \
+			--one-hot-month \
+			~{if defined(null_train_pred_file) then "--train-pred-file " + null_train_pred_file else ""} \
+			~{if defined(null_testval_pred_file) then "--test-val-pred-file " + null_testval_pred_file else ""} \
+			~{if defined(null_train_pred_file) then "--rescale-preds" else ""}
+
+		# Fit wrapper model
+		python3 /usr/local/fit_wrapper.py \
+			--pheno-file ~{pheno_file} \
+			--covar-file prepro_covar.tsv \
+			--score-file ~{score_file} \
+			--val-iids ~{val_samples} \
+			--test-iids ~{test_samples} \
+			--out-dir $(pwd)
+
+	>>>
+
+	runtime {
+		docker: "gcr.io/ucsd-medicine-cast/geonull_prs_prscs:latest"
+	}
+
+	output {
+		File val_preds = "val_preds.csv"
+		File test_preds = "test_preds.csv"
+	}
+}
+
+task score_preds {
+	input {
+		File val_preds
+		File test_preds
+		File pheno_file
+	}
+
+	command <<<
+		CURRENT_DIR=$(pwd)
+
+		python3 /home/score_preds.py \
+			--val-preds ~{val_preds} \
+			--test-preds ~{test_preds} \
+			--pheno-file ~{pheno_file} \
+			--out-dir $CURRENT_DIR
+	>>>
+
+	runtime {
+		docker: "gcr.io/ucsd-medicine-cast/geonull_prs_score_preds:latest"
+	}
+
+	output {
+		File scores_json = "scores.json"
+		Array[File] plots = glob("*.png")
 	}
 }

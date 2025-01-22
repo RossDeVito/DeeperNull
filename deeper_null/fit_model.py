@@ -1,14 +1,26 @@
 """Fit DeepNull style model to data.
 
-Model is either an XGBoost model or a Pytorch Lightning 2.0 style model.
+Single-task models are one of:
+	- Sci-kit learn linear and penalized linear models
+	- XGBoost models
+	- Pytorch neural network models
+
+Multi-task models are neural network models implemented and trained using
+the LibMTL library.
 
 The script has the following requirements to run:
 
 	1. A whitespace delimited covariate file with a header row. This will
 		be used for the input to the model.
-	2. A whitespace delimited phenotype file with a header row. Either should
-		have one column of sample IDs and one column of phenotype values, or
-		use the --pheno_name argument to specify the name of the phenotype.
+	2. Single-task:
+			A whitespace delimited phenotype file with a header row. Either
+			should have one column of sample IDs and one column of phenotype
+			values, or use the --pheno_name argument to specify the name of
+			the phenotype.
+		Multi-task:
+			Multiple whitespace delimited phenotype files as above. If column
+			names are to be used, a list of names should be provided to
+			--pheno_names.
 	3. A model configuration file. This is a JSON file that contains a
 		description of the model to be fit. See the documentation [TODO].
 	4. A directory to write the output to. If the directory does not exist,
@@ -59,6 +71,7 @@ Script has the following command line arguments:
 
 Example usage:
 
+	# Single-task model
 	python fit_model.py \
 		--covar_file ../data/dev/covariates.tsv \
 		--pheno_file ../data/dev/phenotype_0_5.tsv \
@@ -69,6 +82,14 @@ Example usage:
 
 		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/deep_null_config.json -o ../../test_out --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 		
+	# Multi-task model
+	python fit_model.py \
+		--covar_file ../data/dev/covariates.tsv \
+		--pheno_file ../data/dev/phenotype_0_5.tsv ../data/dev/phenotype_0_1.tsv \
+		--model_config ../data/dev/model_config.json \
+		--out_dir ../.. \
+		--train_samples ../data/dev/train_samples.txt \
+		--pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 """
 import argparse
 import os

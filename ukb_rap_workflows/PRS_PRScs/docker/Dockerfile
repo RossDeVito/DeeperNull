@@ -31,7 +31,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 	python3-setuptools && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir pandas
+RUN pip3 install --no-cache-dir pandas scikit-learn
 
 # Install PRS-CS
 RUN git clone https://github.com/getian107/PRScs.git /opt/PRScs && \
@@ -46,3 +46,6 @@ ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
 # Copy in ../add_null_to_covar.py
 COPY prepro_covar.py /usr/local/prepro_covar.py
+
+# Copy in fit_wrapper.py from local directory
+COPY fit_wrapper.py /usr/local/fit_wrapper.py

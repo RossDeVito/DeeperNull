@@ -36,7 +36,7 @@ import json
 
 import dxpy
 
-WORKFLOW_ID = 'workflow-Gv3JvYjJv7B0QKgQQX76f7pG'
+WORKFLOW_ID = 'workflow-Gy4G6K0Jv7BFgbYjBKyP45Vv'
 # DEFAULT_INSTANCE = 'mem2_ssd1_v2_x64'
 DEFAULT_INSTANCE = 'mem3_ssd1_v2_x32'
 

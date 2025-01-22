@@ -90,7 +90,7 @@ task prs_basil_task {
 		Rscript /home/run_basil.R \
 			--pheno_file ~{pheno_file} \
 			--pheno_name ~{pheno_name} \
-			--covar_file ~{covar_file} \
+			--covar_file prepro_covar.tsv \
 			--geno_file $PGEN_PREFIX \
 			--train_samples ~{train_samples} \
 			--val_samples ~{val_samples} \

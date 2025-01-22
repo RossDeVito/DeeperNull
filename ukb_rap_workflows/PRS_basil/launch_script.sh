@@ -1,20 +1,20 @@
 PHENOTYPES=(
-	# "standing_height_50"
-	# "body_fat_percentage_23099"
-	# "platelet_count_30080"
-	# "glycated_haemoglobin_30750"
-	# "vitamin_d_30890"
-	# "diastolic_blood_pressure_4079"
-	# "systolic_blood_pressure_4080"
-	# "FEV1_3063"
-	# "FVC_3062"
-	# "HDL_cholesterol_30760"
-	# "LDL_direct_30780"
-	# "triglycerides_30870"
-	# "c-reactive_protein_30710"
-	# "creatinine_30700"
-	# "alanine_aminotransferase_30620"
-	# "aspartate_aminotransferase_30650"
+	"standing_height_50"
+	"body_fat_percentage_23099"
+	"platelet_count_30080"
+	"glycated_haemoglobin_30750"
+	"vitamin_d_30890"
+	"diastolic_blood_pressure_4079"
+	"systolic_blood_pressure_4080"
+	"FEV1_3063"
+	"FVC_3062"
+	"HDL_cholesterol_30760"
+	"LDL_direct_30780"
+	"triglycerides_30870"
+	"c-reactive_protein_30710"
+	"creatinine_30700"
+	"alanine_aminotransferase_30620"
+	"aspartate_aminotransferase_30650"
 	"grip_strength"
 	# "heel_bone_mineral_density_3148"
 	# "mean_time_to_identify_matches_20023"
@@ -33,10 +33,10 @@ PHENOTYPES=(
 )
 
 # Set the covariate set
-COVAR_SET=age_sex_pc
+# COVAR_SET=age_sex_pc
 # COVAR_SET=age_sex_all_coords_pc
 # COVAR_SET=age_sex_time_pc
-# COVAR_SET=age_sex_all_coords_time_pc
+COVAR_SET=age_sex_all_coords_time_pc
 
 # Set the model type
 MODEL_TYPE=lasso

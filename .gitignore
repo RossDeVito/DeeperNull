@@ -4,6 +4,8 @@
 **/docker/*.py
 **/docker/*.R
 
+!**/ukb_rap_workflows/PRS_PRScs/docker/fit_wrapper.py
+
 **/ukb_rap_workflows/resources/plink2
 **/ukb_rap_workflows/resources/PRSice_linux
 

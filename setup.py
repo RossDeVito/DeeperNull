@@ -8,18 +8,4 @@ setup(
     author_email='rdevito@ucsd.edu',
     description='DeepNull style models with other features',
     long_description=open('README.md').read(),
-    long_description_content_type='text/markdown',
-    install_requires=[
-		'matplotlib',
-        'numpy',
-        'pandas',
-		'pytorch-lightning',
-        'scikit-learn',
-        'scipy',
-        'seaborn',
-		'torch',
-		'torchmetrics',
-		'tqdm',
-		'xgboost',
-    ],
 )

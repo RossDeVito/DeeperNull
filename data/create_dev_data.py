@@ -58,17 +58,56 @@ if __name__ == '__main__':
 				fmt='%s')
 	
 	# Generate covariates.
-	ages = np.random.randint(age_range[0], age_range[1] + 1, n_samples)
+	ages = np.random.randint(age_range[0], age_range[1] + 1, n_samples).astype(float)
 	sexes = np.random.randint(0, 2, n_samples)
 
 	# Save covariates as whitespace-delimited file.
 	cov_df = pd.DataFrame({
 		'IID': iids,
 		'age': ages,
-		'sex': sexes
+		'sex_31': sexes
 	})
 	cov_df.to_csv(
 		os.path.join(save_dir, 'covariates.tsv'),
+		sep='\t',
+		index=False
+	)
+
+	# Generate additional fields for ScaledEmbNamedDataset
+	birth_coords_north = np.random.uniform(0, 1200000, n_samples).astype(int)
+	birth_coords_east = np.random.uniform(0, 1200000, n_samples).astype(int)
+	home_coords_north = np.random.uniform(0, 1200000, n_samples)
+	home_coords_east = np.random.uniform(0, 1200000, n_samples)
+	time_of_day = np.random.uniform(0, 1000, n_samples)
+	day_of_year = np.random.uniform(1, 365, n_samples)
+	month_of_year = np.random.randint(1, 13, n_samples)
+	pcs = np.random.normal(0, 1, (n_samples, 10))  # 10 principal components
+
+	# Save covariates with additional fields as whitespace-delimited file.
+	cov_df = pd.DataFrame({
+		'IID': iids,
+		'age': ages,
+		'sex_31': sexes,
+		'birth_coord_north': birth_coords_north,
+		'birth_coord_east': birth_coords_east,
+		'home_coord_north': home_coords_north,
+		'home_coord_east': home_coords_east,
+		'time_of_day': time_of_day,
+		'day_of_year': day_of_year,
+		'month_of_year': month_of_year
+	})
+	cov_df.to_csv(
+		os.path.join(save_dir, 'covariates_with_scaled_emb_named.tsv'),
+		sep='\t',
+		index=False
+	)
+
+	# Save covariates with additional fields and PCs as whitespace-delimited file.
+	for i in range(pcs.shape[1]):
+		cov_df[f'pc_{i+1}'] = pcs[:, i]
+
+	cov_df.to_csv(
+		os.path.join(save_dir, 'covariates_with_scaled_emb_named_and_pcs.tsv'),
 		sep='\t',
 		index=False
 	)
@@ -123,8 +162,9 @@ if __name__ == '__main__':
 		# Save phenotype as whitespace-delimited file.
 		pheno_df = pd.DataFrame({
 			'IID': iids,
-			'phenotype': pheno
+			f"phenotype_{str(var_exp_vals[i]).replace('.', '_')}": pheno
 		})
+		pheno_df = pheno_df.sample(frac=0.9) # simulate missing labels
 		pheno_df.to_csv(
 			os.path.join(
 				save_dir, 

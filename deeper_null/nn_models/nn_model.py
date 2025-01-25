@@ -32,7 +32,6 @@ Model configuration JSON should have the following keys:
 	* pbar_refresh_rate: int, from pytorch_lightning TQDMProgressBar.
 		How often to refresh the progress bar (in steps). Default is 50.
 
-
 """
 
 import os
@@ -239,7 +238,7 @@ class NNModel:
 		"""
 		self.config = deepcopy(config)
 		self.out_dir = out_dir
-		print(self.out_dir)
+		# print(self.out_dir)
 
 		# Set default values for lr, batch_size, max_epochs, patience,
 		# min_delta, and verbose.

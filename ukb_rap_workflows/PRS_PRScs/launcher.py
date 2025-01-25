@@ -36,7 +36,7 @@ import dxpy
 
 
 WORKFLOW_ID = 'workflow-Gy52yP8Jv7B9bBP64FP81Qf3'
-DEFAULT_INSTANCE = 'mem2_ssd2_v2_x16'
+DEFAULT_INSTANCE = 'mem1_ssd1_v2_x72'
 
 N_SAMP_PHENO = {
 	'FEV1_3063': 231888,
@@ -267,7 +267,7 @@ def launch_gwas_workflow(
 		folder=output_dir,
 		name=name,
 		instance_type=instance_type,
-		priority='normal',
+		priority='low',
 		ignore_reuse=True
 	)
 	print("Started analysis %s (%s)\n"%(analysis.get_id(), name))

@@ -15,12 +15,10 @@ The script has the following requirements to run:
 	2. Single-task:
 			A whitespace delimited phenotype file with a header row. Either
 			should have one column of sample IDs and one column of phenotype
-			values, or use the --pheno_name argument to specify the name of
-			the phenotype.
+			values.
 		Multi-task:
-			Multiple whitespace delimited phenotype files as above. If column
-			names are to be used, a list of names should be provided to
-			--pheno_names.
+			Multiple whitespace delimited phenotype files as above. Phenotype
+			column names must be unique across files.
 	3. A model configuration file. This is a JSON file that contains a
 		description of the model to be fit. See the documentation [TODO].
 	4. A directory to write the output to. If the directory does not exist,
@@ -47,7 +45,8 @@ The script has the following requirements to run:
 Script has the following command line arguments:
 
 	--covar_file: Path to covariate file.
-	--pheno_file: Path to phenotype file.
+	--pheno_file: Path to phenotype file if single-task, or paths to
+		multiple phenotype files if multi-task. 
 	--model_config: Path to model configuration JSON file.
 	--out_dir: Path to output directory. If it does not exist, will 
 		be created. Default is current working directory.
@@ -55,7 +54,7 @@ Script has the following command line arguments:
 		sample IDs. Default is 'IID'.
 	--pheno_sample_id_col: Name of column in phenotype file that
 		contains sample IDs. Defaults to value of sample_id_col.
-	--binary_pheno: Whether phenotype is binary. Default is False.
+	--binary_pheno: Whether phenotype is binary. Default is False. TODO check if does anything
 	--n_folds: Number of folds to use for cross validation. Default is 5.
 	--train_samples: Path to file containing sample IDs to use for training
 		(Optional, see above).
@@ -101,12 +100,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import metrics
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 import xgboost as xgb
 
 from deeper_null.xgb_models import XGB_MODEL_TYPES, create_xgb_model
 from deeper_null.nn_models import NN_MODEL_TYPES, create_nn_model
 from deeper_null.linear_models import LINEAR_MODEL_TYPES, create_linear_model
+from deeper_null.multi_task_models import MultiTaskModel
+from deeper_null.multi_task_models.data_modules import (
+	MTTabularDataset, MTCoordScalingTabularDataset, MTScaledEmbNamedDataset
+)
 
 
 SEX_FEAT_NAME='sex_31'
@@ -116,8 +120,9 @@ def parse_args():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-c', '--covar_file', required=True,
 					help='Path to covariate file.')
-	parser.add_argument('-p', '--pheno_file', required=True,
-					help='Path to phenotype file.')
+	parser.add_argument('-p', '--pheno_file', required=True, nargs='+',
+					help='Path to phenotype file if single-task, or paths to '
+						 'multiple phenotype files if multi-task.')
 	parser.add_argument('-m', '--model_config', required=True,
 					help='Path to model configuration JSON file.')
 	parser.add_argument('-o', '--out_dir', default='.',
@@ -206,6 +211,10 @@ def load_covar_pheno_data(
 	dataframes for the prediction pair will also be None.
 
 	Raises error if prediction_samples is provided without training_samples.
+
+	pheno_file is a file or list of files. If list is len > 1 then
+	multi-task model is assumed multiple phenotypes will be loaded and
+	joined on sample ID.
 	"""
 
 	if prediction_samples is not None and training_samples is None:
@@ -220,8 +229,19 @@ def load_covar_pheno_data(
 	covar_df = covar_df.set_index(sample_id_col)
 
 	# Load phenotype data.
-	pheno_df = pd.read_csv(pheno_file, sep='\s+')
-	pheno_df = pheno_df.set_index(pheno_sample_id_col)
+	if isinstance(pheno_file, str) or (
+		isinstance(pheno_file, list) and len(pheno_file) == 1
+	):
+		pheno_df = pd.read_csv(pheno_file, sep='\s+')
+		pheno_df = pheno_df.set_index(pheno_sample_id_col)
+	else:
+		# Load multiple phenotype files and join on sample ID.
+		pheno_dfs = []
+		for f in pheno_file:
+			df = pd.read_csv(f, sep='\s+')
+			df = df.set_index(pheno_sample_id_col)
+			pheno_dfs.append(df)
+		pheno_df = pd.concat(pheno_dfs, axis=1, join='outer')
 
 	# Subset to just samples in both covariate and phenotype files
 	samp_ids = list(set(covar_df.index).intersection(pheno_df.index))
@@ -248,8 +268,15 @@ def load_covar_pheno_data(
 			return (train_covar_df, train_pheno_df), (pred_covar_df, pred_pheno_df)
 		
 
-def create_model(model_config, out_dir='.'):
-	if model_config['model_type'].lower() in XGB_MODEL_TYPES:
+def create_model(model_config, out_dir='.', example_batch=None):
+	if model_config['model_type'].lower() == 'multi_task':
+		assert example_batch is not None
+		return MultiTaskModel(
+			model_config,
+			out_dir=out_dir,
+			example_batch=example_batch
+		)
+	elif model_config['model_type'].lower() in XGB_MODEL_TYPES:
 		return create_xgb_model(model_config)
 	elif model_config['model_type'].lower() in NN_MODEL_TYPES:
 		return create_nn_model(model_config, out_dir=out_dir)
@@ -493,9 +520,21 @@ if __name__ == '__main__':
 
 	# Fit and make predictions with n-fold cross validation.
 	print('Fitting model with {} folds.'.format(args.n_folds))
-	train_ho_preds = dict()
+
+	if model_config['model_type'].lower() == 'multi_task':
+		is_multi_task = True
+		print('Training multi-task model.')
+
+		train_ho_preds = defaultdict(lambda: dict()) # task_name -> {samp_id: pred}
+		ensemble_preds = defaultdict(lambda: defaultdict(lambda: [])) # task_name -> samp_id -> [preds]
+	else:
+		is_multi_task = False
+		print('Training single-task model.')
+		
+		train_ho_preds = dict()
+		ensemble_preds = defaultdict(lambda: [])
+
 	train_ho_sex = dict()
-	ensemble_preds = defaultdict(lambda: [])
 	includes_sex = False
 
 	for i in tqdm(range(args.n_folds), desc="Training folds", total=args.n_folds):
@@ -511,14 +550,60 @@ if __name__ == '__main__':
 		ho_y = train_Xy[1].loc[ho_samp_ids]
 
 		# Create model
-		model = create_model(model_config, out_dir=args.out_dir)
+		if is_multi_task:
+			# Create example batch for initializing network
+			example_X = train_X.sample(
+				model_config['train_params'].get('batch_size', 32)
+			)
+
+			if model_config['input_fmt'] == 'tabular':
+				example_dataset = MTTabularDataset(
+					example_X, task_names=list(model_config['tasks'].keys())
+				)
+			elif model_config['input_fmt'] == 'coord_scaling_tabular':
+				example_dataset = MTCoordScalingTabularDataset(
+					example_X, task_names=list(model_config['tasks'].keys())
+				)
+			elif model_config['input_fmt'] == 'scaled_emb_named':
+				example_dataset = MTScaledEmbNamedDataset(
+					example_X, task_names=list(model_config['tasks'].keys())
+				)
+			else:
+				raise ValueError(f'Invalid input format: {model_config["input_fmt"]}')
+
+			dl = DataLoader(
+				example_dataset,
+				batch_size=model_config['train_params'].get('batch_size', 32),
+				# num_workers=0
+			)
+			batch = next(iter(dl))
+
+			model = create_model(
+				model_config,
+				out_dir=args.out_dir,
+				example_batch=batch
+			)
+		else:
+			model = create_model(model_config, out_dir=args.out_dir)
 
 		# Fit model
 		model.fit(train_X, train_y)
 
 		# Make predictions on holdout samples
-		ho_preds = model.predict(ho_X).flatten().tolist()	# type: ignore
-		train_ho_preds.update(dict(zip(ho_X.index, ho_preds)))
+		ho_preds = model.predict(ho_X)	# type: ignore
+
+		if is_multi_task:
+			ho_preds = dict(ho_preds)
+			for task_name, preds in ho_preds.items():
+				train_ho_preds[task_name].update(
+					dict(zip(ho_X.index, preds.flatten().tolist()))
+				)
+			
+		else:
+			train_ho_preds.update(dict(zip(
+				ho_X.index,
+				ho_preds.flatten().tolist()
+			)))
 
 		# Also save sex of holdout samples if available
 		if SEX_FEAT_NAME in ho_X.columns:
@@ -530,69 +615,142 @@ if __name__ == '__main__':
 		# Make predictions on prediction samples and add to ensemble values
 		# so that they can be averaged later
 		if pred_Xy[0] is not None:
-			pred_preds = model.predict(pred_Xy[0]).flatten().tolist()	# type: ignore
+			pred_preds = model.predict(pred_Xy[0])	# type: ignore
 
-			for samp_id, pred in zip(pred_Xy[0].index, pred_preds):
-				ensemble_preds[samp_id].append(pred)
+			if is_multi_task:
+				pred_preds = dict(pred_preds)
+				for task_name, task_preds in pred_preds.items():
+					for samp_id, pred in zip(pred_Xy[0].index, task_preds.flatten().tolist()):
+						ensemble_preds[task_name][samp_id].append(pred)
+			else:
+				for samp_id, pred in zip(pred_Xy[0].index, pred_preds.flatten().tolist()):
+					ensemble_preds[samp_id].append(pred)
 
 		# If only training one fold, break after first fold.
 		if args.train_one_fold:
 			break
 
-	# Save predictions on holdout samples
-	ho_preds = pd.DataFrame.from_dict(train_ho_preds, orient='index')
-	ho_preds.columns = ['pred']
+	# Save predictions on holdout samples then score
+	if is_multi_task:
+		all_scores = dict()
 
-	ho_preds.index.name = args.sample_id_col
-	ho_preds.reset_index().to_csv(
-		os.path.join(args.out_dir, 'ho_preds.csv'), index=False
-	)
-	
-	# Join with holdout phenotype values and name columns 'true'
-	ho_preds = ho_preds.join(train_Xy[1])
-	ho_preds = ho_preds.rename(columns={train_Xy[1].columns[0]: 'true'})
+		for task_name, preds in train_ho_preds.items():
+			ho_preds = pd.DataFrame.from_dict(preds, orient='index')
+			ho_preds.columns = ['pred']
 
-	# Join sex if available
-	if includes_sex:
-		ho_sex = pd.DataFrame.from_dict(train_ho_sex, orient='index')
-		ho_sex.columns = ['sex']
-		ho_preds = ho_preds.join(ho_sex)
+			ho_preds.index.name = args.sample_id_col
+			ho_preds.reset_index().to_csv(
+				os.path.join(args.out_dir, f'ho_preds_{task_name}.csv'),
+				index=False
+			)
 
-	# Calculate metrics
-	if args.binary_pheno:
-		scores = score_and_plot_binary(
-			ho_preds['true'],
-			ho_preds['pred'],
-			args.out_dir,
-			'ho'
-		)
+			# Join with holdout phenotype values and name columns 'true'
+			ho_preds = ho_preds.join(train_Xy[1][task_name])
+			ho_preds = ho_preds.rename(columns={train_Xy[1][task_name].name: 'true'})
+
+			# Join sex if available
+			if includes_sex:
+				ho_sex = pd.DataFrame.from_dict(train_ho_sex, orient='index')
+				ho_sex.columns = ['sex']
+				ho_preds = ho_preds.join(ho_sex)
+
+			# Calculate metrics
+			if args.binary_pheno:
+				raise NotImplementedError('Binary phenotype not implemented for multi-task models.')
+			else:
+				sex = None
+				if 'sex_31' in ho_preds.columns:
+					sex = ho_preds.sex.values
+				scores = score_and_plot_regression(
+					ho_preds['true'],
+					ho_preds['pred'],
+					args.out_dir,
+					f'ho_{task_name}',
+					sex=sex
+				)
+
+			all_scores[task_name] = scores
+
+		# Setup for saving
+		scores = all_scores
+
 	else:
-		sex = None
-		if 'sex' in ho_preds.columns:
-			sex = ho_preds.sex.values
-		scores = score_and_plot_regression(
-			ho_preds['true'],
-			ho_preds['pred'],
-			args.out_dir,
-			'ho',
-			sex=sex
+		ho_preds = pd.DataFrame.from_dict(train_ho_preds, orient='index')
+		ho_preds.columns = ['pred']
+
+		ho_preds.index.name = args.sample_id_col
+		ho_preds.reset_index().to_csv(
+			os.path.join(args.out_dir, 'ho_preds.csv'),
+			index=False
 		)
+	
+		# Join with holdout phenotype values and name columns 'true'
+		ho_preds = ho_preds.join(train_Xy[1])
+		ho_preds = ho_preds.rename(columns={train_Xy[1].columns[0]: 'true'})
+
+		# Join sex if available
+		if includes_sex:
+			ho_sex = pd.DataFrame.from_dict(train_ho_sex, orient='index')
+			ho_sex.columns = ['sex']
+			ho_preds = ho_preds.join(ho_sex)
+
+		# Drop rows with missing values
+		ho_preds = ho_preds.dropna()
+
+		# Calculate metrics
+		if args.binary_pheno:
+			scores = score_and_plot_binary(
+				ho_preds['true'],
+				ho_preds['pred'],
+				args.out_dir,
+				'ho'
+			)
+		else:
+			sex = None
+			if 'sex' in ho_preds.columns:
+				sex = ho_preds.sex.values
+			scores = score_and_plot_regression(
+				ho_preds['true'],
+				ho_preds['pred'],
+				args.out_dir,
+				'ho',
+				sex=sex
+			)
 
 	# Save scores
 	with open(os.path.join(args.out_dir, 'ho_scores.json'), 'w') as f:
 		json.dump(scores, f, indent=4)
 
 	# Save ensemble predictions and standard deviation and save as one csv
-	if pred_Xy[0] is not None:
-		print('Saving ensemble predictions.')
-		ens_pred_dev = {
-			sid: (np.mean(preds), np.std(preds)) for sid, preds in ensemble_preds.items()
-		}
-		ens_pred_dev = pd.DataFrame.from_dict(ens_pred_dev, orient='index')
-		ens_pred_dev.columns = ['pred', 'std']
-		ens_pred_dev.index.name = args.sample_id_col
-		ens_pred_dev.reset_index().to_csv(
-			os.path.join(args.out_dir, 'ens_preds.csv'), index=False
-		)
+	if is_multi_task:
+		if pred_Xy[0] is not None:
+			print('Saving ensemble predictions.')
+			ens_pred_dev = {
+				task_name: {
+					sid: (np.mean(preds), np.std(preds)) for sid, preds in preds.items()
+				} for task_name, preds in ensemble_preds.items()
+			}
+			for task_name, preds in ens_pred_dev.items():
+				ens_pred_dev[task_name] = pd.DataFrame.from_dict(preds, orient='index')
+				ens_pred_dev[task_name].columns = ['pred', 'std']
+				ens_pred_dev[task_name].index.name = args.sample_id_col
+				ens_pred_dev[task_name].reset_index().to_csv(
+					os.path.join(args.out_dir, f'ens_preds_{task_name}.csv'),
+					index=False
+				)
+		else:
+			print('No prediction samples provided. No ensemble predictions to save.')
 	else:
-		print('No prediction samples provided. No ensemble predictions to save.')
+		if pred_Xy[0] is not None:
+			print('Saving ensemble predictions.')
+			ens_pred_dev = {
+				sid: (np.mean(preds), np.std(preds)) for sid, preds in ensemble_preds.items()
+			}
+			ens_pred_dev = pd.DataFrame.from_dict(ens_pred_dev, orient='index')
+			ens_pred_dev.columns = ['pred', 'std']
+			ens_pred_dev.index.name = args.sample_id_col
+			ens_pred_dev.reset_index().to_csv(
+				os.path.join(args.out_dir, 'ens_preds.csv'), index=False
+			)
+		else:
+			print('No prediction samples provided. No ensemble predictions to save.')

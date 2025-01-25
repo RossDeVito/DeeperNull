@@ -1,0 +1,46 @@
+{
+	"model_type": "multi_task",
+	"weighting_strategy": "GradNorm",
+	"weighting_kwargs": {
+		"alpha": 1.5
+	},
+	"architecture": "HPS",
+	"input_fmt": "coord_scaling_tabular",
+	"train_params": {
+		"epochs": 25,
+		"early_stopping_patience": 2,
+		"optim": "adam",
+		"optim_params": {
+			"lr": 0.001,
+			"weight_decay": 0.0001
+		},
+		"scheduler_params": {
+			"scheduler": "step",
+			"step_size": 50
+		},
+		"batch_size": 128,
+		"dataloader_workers": 2,
+		"device": "cpu"
+	},
+	"encoder": {
+		"network_type": "MLP",
+		"network_kwargs": {
+			"hidden_layers": [32, 16],
+			"activations": "ReLU",
+			"dropout": 0.1
+		}
+	},
+	"decoder": {
+		"network_type": "MLP",
+		"network_kwargs": {
+			"hidden_layers": [16, 8, 1],
+			"activations": "ReLU",
+			"activation_after_last_hidden": false,
+			"dropout": 0.1
+		}
+	},
+	"tasks": {
+		"phenotype_0_1": {"loss": "mae"},
+		"phenotype_0_5": {"loss": "mae"}
+	}
+}

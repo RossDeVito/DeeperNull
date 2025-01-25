@@ -1,10 +1,9 @@
 # docker build -t deepernull/fit_dn_model:latest -f Dockerfile .
-# docker run -it --rm deepernull/fit_dn_model:latest /bin/bash
+# docker run -it --rm gcr.io/ucsd-medicine-cast/fit_dn_mt_model:latest /bin/bash
 # docker run -it --rm -v "$(pwd):/mnt/loc" gcr.io/ucsd-medicine-cast/fit_dn_model:latest /bin/bash
 
 # Options:
-# ARG PYTHON_VERSION=3.10
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=20.04
 ARG BASE_IMAGE=ubuntu:${UBUNTU_VERSION}
 
 # Base image
@@ -40,10 +39,19 @@ RUN pip3 install --no-cache-dir \
 	scikit-learn \
 	scipy \
 	seaborn \
-	torch>=2.0 \
+	torch==1.8.1 \
 	torchmetrics \
+	torchvision \
+	cvxpy \
 	tqdm \
 	xgboost
 
-# List installed packages
-RUN pip3 list
+# Install LibMTL
+RUN git clone https://github.com/median-research-group/LibMTL.git && \
+	cd LibMTL && \
+	pip3 install . --no-deps
+
+# # Install DeeperNull
+# RUN git clone https://github.com/RossDeVito/DeeperNull.git && \
+# 	cd DeeperNull && \
+# 	pip3 install . --no-deps

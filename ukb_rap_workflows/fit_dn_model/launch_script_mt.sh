@@ -1,10 +1,10 @@
 # Define lists of model configs and covar sets
 
-MODEL_CONFIGS=
+MODEL_CONFIG=dev_1
 
 COVAR_SET="age_sex_all_coords_time"
 
-CONFIG_DIR=model_configs
+CONFIG_DIR=model_configs/mt
 
 PHENOTYPES=(
 	"standing_height_50"
@@ -55,7 +55,7 @@ done
 # Launch training job
 if [ "$GPU" = true ]; then
 	echo "Launching Deep Null training on GPU"
-	python fit_dn_model_launcher_ukbb.py \
+	python fit_dn_mt_model_launcher.py \
 		--model-desc $MODEL_CONFIG \
 		--model-config ${CONFIG_DIR}/${MODEL_CONFIG}.json \
 		--covar-set $COVAR_SET \
@@ -64,7 +64,7 @@ if [ "$GPU" = true ]; then
 		-g
 else
 	echo "Launching Deep Null training on CPU"
-	python fit_dn_model_launcher_ukbb.py \
+	python fit_dn_mt_model_launcher.py \
 		--model-desc $MODEL_CONFIG \
 		--model-config ${CONFIG_DIR}/${MODEL_CONFIG}.json \
 		--covar-set $COVAR_SET \

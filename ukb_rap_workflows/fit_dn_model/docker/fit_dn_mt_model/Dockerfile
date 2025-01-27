@@ -35,7 +35,7 @@ RUN pip3 install --no-cache-dir \
 	matplotlib \
 	numpy \
 	pandas \
-	pytorch-lightning \
+	pytorch-lightning==1.5.8 \
 	scikit-learn \
 	scipy \
 	seaborn \

@@ -56,12 +56,14 @@ task fit_dn_mt_model_task {
 		pip3 list
 
 		# Turn phenp_files into a string with space separated values
-		PHENO_FILE_STR=$(IFS=" "; echo "${pheno_files[*]}")
+		PHENO_FILES_ARRAY=(~{sep=" " pheno_files})
+		PHENO_FILE_STR=$(IFS=" "; echo "${PHENO_FILES_ARRAY[*]}")
+		echo "Pheno files: ${PHENO_FILE_STR}"
 
 		# Run DeeperNull model fitting
 		python3 DeeperNull/deeper_null/fit_model.py \
 			--covar_file ~{covar_file} \
-			--pheno_files ${PHENO_FILE_STR} \
+			--pheno_file ${PHENO_FILE_STR} \
 			--model_config ~{model_config} \
 			--train_samples ~{train_samp_file} \
 			--pred_samples ~{val_samp_file} ~{test_samp_file}

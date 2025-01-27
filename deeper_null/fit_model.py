@@ -654,6 +654,9 @@ if __name__ == '__main__':
 				ho_sex.columns = ['sex']
 				ho_preds = ho_preds.join(ho_sex)
 
+			# Drop rows with missing values
+			ho_preds = ho_preds.dropna()
+
 			# Calculate metrics
 			if args.binary_pheno:
 				raise NotImplementedError('Binary phenotype not implemented for multi-task models.')

@@ -267,7 +267,8 @@ def launch_gwas_workflow(
 		folder=output_dir,
 		name=name,
 		instance_type=instance_type,
-		priority='low',
+		# priority='low',
+		priority='normal',
 		ignore_reuse=True
 	)
 	print("Started analysis %s (%s)\n"%(analysis.get_id(), name))

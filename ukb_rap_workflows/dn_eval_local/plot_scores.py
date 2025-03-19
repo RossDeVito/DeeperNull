@@ -88,7 +88,7 @@ def run_and_plot_rank_tests(scores_df, block_col, group_col, metric):
 			block_col=block_col,
 			block_id_col=block_col,
 			group_col=group_col,
-			y_col=metric,
+			y_col=metric
 		)
 
 		# Critical difference diagram

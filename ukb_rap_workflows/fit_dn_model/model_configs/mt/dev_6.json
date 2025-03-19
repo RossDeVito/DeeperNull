@@ -1,0 +1,64 @@
+{
+	"model_type": "multi_task",
+	"weighting_strategy": "DWA",
+	"weighting_kwargs": {
+		"T": 2.0
+	},
+	"architecture": "HPS",
+	"input_fmt": "coord_scaling_tabular",
+	"train_params": {
+		"epochs": 1000,
+		"early_stopping_patience": 30,
+		"optim": "adam",
+		"optim_params": {
+			"lr": 0.0001,
+			"weight_decay": 0.0001
+		},
+		"scheduler_params": {
+			"scheduler": "step",
+			"step_size": 20
+		},
+		"batch_size": 128,
+		"dataloader_workers": 2,
+		"device": "cpu"
+	},
+	"encoder": {
+		"network_type": "MLP",
+		"network_kwargs": {
+			"hidden_layers": [48, 48, 48, 48],
+			"activations": "ReLU",
+			"dropout": 0.1
+		},
+		"input_args": {
+			"month_emb_dim": 8,
+			"sex_emb_dim": 8
+		}
+	},
+	"decoder": {
+		"network_type": "MLP",
+		"network_kwargs": {
+			"hidden_layers": [16, 16, 16, 1],
+			"activations": "ReLU",
+			"activation_after_last_hidden": false,
+			"dropout": 0.1
+		}
+	},
+	"tasks": {
+		"standing_height_50": {"loss": "mse"},
+		"body_fat_percentage_23099": {"loss": "mse"},
+		"platelet_count_30080": {"loss": "mse"},
+		"glycated_haemoglobin_30750": {"loss": "mse"},
+		"vitamin_d_30890": {"loss": "mse"},
+		"diastolic_blood_pressure_4079": {"loss": "mse"},
+		"systolic_blood_pressure_4080": {"loss": "mse"},
+		"FEV1_3063": {"loss": "mse"},
+		"FVC_3062": {"loss": "mse"},
+		"HDL_cholesterol_30760": {"loss": "mse"},
+		"LDL_direct_30780": {"loss": "mse"},
+		"triglycerides_30870": {"loss": "mse"},
+		"c-reactive_protein_30710": {"loss": "mse"},
+		"creatinine_30700": {"loss": "mse"},
+		"alanine_aminotransferase_30620": {"loss": "mse"},
+		"aspartate_aminotransferase_30650": {"loss": "mse"}
+	}
+}

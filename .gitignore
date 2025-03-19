@@ -15,6 +15,7 @@ tests/*
 **/ukb_rap_workflows/dn_eval_local/scores
 **/ukb_rap_workflows/PRS_eval_local/tmp
 **/ukb_rap_workflows/PRS_eval_local/scores
+**/ukb_rap_workflows/PRS_PRScs_GWAS_manhattan_local/sum_stats/*
 
 **/ukb_rap_workflows/PRS_PRScs/LD_files/
 

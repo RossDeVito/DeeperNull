@@ -1,6 +1,6 @@
 # Define lists of model configs and covar sets
 
-MODEL_CONFIG=dev_1
+MODEL_CONFIG=dev_5c1
 
 COVAR_SET="age_sex_all_coords_time"
 
@@ -43,8 +43,8 @@ PHENOTYPES=(
 VERSION=V_dev_mt_1
 
 GPU=false
-CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16
-# CPU_INSTANCE_TYPE=mem1_ssd1_v2_x36
+# CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16
+CPU_INSTANCE_TYPE=mem1_ssd1_v2_x36
 
 # Create PHENOS_ARG_STR, a space-separated string of phenotypes
 PHENOS_ARG_STR=""

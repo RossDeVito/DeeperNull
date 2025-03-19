@@ -50,6 +50,9 @@ Script has the following command line arguments:
 	--model_config: Path to model configuration JSON file.
 	--out_dir: Path to output directory. If it does not exist, will 
 		be created. Default is current working directory.
+	--save_models: If this flag is present, the models will be saved to
+		the output directory numbered by fold. Currently only works for
+		XGBoost models.
 	--sample_id_col: Name of column in covariate file that contains
 		sample IDs. Default is 'IID'.
 	--pheno_sample_id_col: Name of column in phenotype file that
@@ -128,6 +131,9 @@ def parse_args():
 	parser.add_argument('-o', '--out_dir', default='.',
 					help='Path to output directory. If it does not exist, '
 						'will be created.')
+	parser.add_argument('--save_models', action='store_true',
+					help='If this flag is present, the models will be saved '
+						'to the output directory numbered by fold.')
 	parser.add_argument('-s', '--sample_id_col', default='IID',
 					help='Name of column in covariate file that contains '
 						'sample IDs.')
@@ -588,6 +594,10 @@ if __name__ == '__main__':
 
 		# Fit model
 		model.fit(train_X, train_y)
+
+		# Save model if requested
+		if args.save_models:
+			model.save(args.out_dir, i)
 
 		# Make predictions on holdout samples
 		ho_preds = model.predict(ho_X)	# type: ignore

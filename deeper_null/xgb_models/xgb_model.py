@@ -46,6 +46,12 @@ class ClassifierXGB:
 		"""Make predictions."""
 		return self.model.predict(X)
 	
+	def save(self, path, fold_num):
+		"""Save model."""
+		self.model.save_model(
+			f"{path}/model_{fold_num}.json"
+		)
+	
 
 class RegressorXGB:
 	"""XGBoost regressor wrapper."""
@@ -72,6 +78,12 @@ class RegressorXGB:
 	def predict(self, X):
 		"""Make predictions."""
 		return self.model.predict(X)
+	
+	def save(self, path, fold_num):
+		"""Save model."""
+		self.model.save_model(
+			f"{path}/model_{fold_num}.json"
+		)
 
 
 def create_xgb_model(config):

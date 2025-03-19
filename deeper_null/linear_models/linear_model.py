@@ -7,6 +7,7 @@ Model configuration should have the following keys:
 """
 
 from copy import deepcopy
+import pickle
 
 import numpy as np
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
@@ -36,6 +37,11 @@ class LinearModel:
 	def predict(self, X):
 		"""Make predictions."""
 		return self.model.predict(X)
+	
+	def save(self, path, fold_num):
+		"""Save model."""
+		with open(f"{path}/model_{fold_num}.pkl", 'wb') as f:
+			pickle.dump(self.model, f)
 	
 
 def create_linear_model(config):

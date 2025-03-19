@@ -449,6 +449,10 @@ class NNModel:
 		# Make predictions
 		preds = self.trainer.predict(self.model, loader)
 		return preds[0]
+	
+	def save(self, path, fold_num):
+		"""Save model."""
+		torch.save(self.model, f"{path}/model_{fold_num}.pt")
 
 
 def create_nn_model(config, out_dir=None):

@@ -1,22 +1,25 @@
 # Define lists of model configs and covar sets
 # MODEL_CONFIGS=("lin_reg_1" "lasso_1" "ridge_2")
 # MODEL_CONFIGS=("deepnull_orig_1" "deepnull_es_1" "deepnull_eswp_1" "deepnull_eswp_sm_1")
-# MODEL_CONFIGS=("xgb_4" "xgb_5")
-MODEL_CONFIGS=(
-	"lin_reg_1" "lasso_1" "ridge_2"
-	"deepnull_orig_1" "deepnull_es_1" "deepnull_eswp_1" "deepnull_eswp_sm_1"
-	"xgb_1" "xgb_2" "xgb_3"
-)
+MODEL_CONFIGS=("xgb_3")
+# MODEL_CONFIGS=(
+# 	"lin_reg_1" "lasso_1" "ridge_2"
+# 	"deepnull_orig_1" "deepnull_es_1" "deepnull_eswp_1" "deepnull_eswp_sm_1"
+# 	"xgb_1" "xgb_2" "xgb_3"
+# )
 
+# COVAR_SETS=(
+# 	"age_sex" "age_sex_pc"
+# 	"age_sex_birth_coords" "age_sex_birth_coords_pc"
+# 	"age_sex_home_coords" "age_sex_home_coords_pc"
+# 	"age_sex_all_coords" "age_sex_all_coords_pc"
+# 	"age_sex_tod" "age_sex_tod_pc"
+# 	"age_sex_toy" "age_sex_toy_pc"
+# 	"age_sex_time" "age_sex_time_pc"
+# 	"age_sex_all_coords_time" "age_sex_all_coords_time_pc"
+# )
 COVAR_SETS=(
-	"age_sex" "age_sex_pc"
-	"age_sex_birth_coords" "age_sex_birth_coords_pc"
-	"age_sex_home_coords" "age_sex_home_coords_pc"
-	"age_sex_all_coords" "age_sex_all_coords_pc"
-	"age_sex_tod" "age_sex_tod_pc"
-	"age_sex_toy" "age_sex_toy_pc"
-	"age_sex_time" "age_sex_time_pc"
-	"age_sex_all_coords_time" "age_sex_all_coords_time_pc"
+	"age_sex_all_coords_time"
 )
 
 CONFIG_DIR=model_configs
@@ -26,7 +29,7 @@ PHENOTYPES=(
 	# "body_fat_percentage_23099"
 	# "platelet_count_30080"
 	# "glycated_haemoglobin_30750"
-	# "vitamin_d_30890"
+	"vitamin_d_30890"
 	# "diastolic_blood_pressure_4079"
 	# "systolic_blood_pressure_4080"
 	# "FEV1_3063"
@@ -38,24 +41,9 @@ PHENOTYPES=(
 	# "creatinine_30700"
 	# "alanine_aminotransferase_30620"
 	# "aspartate_aminotransferase_30650"
-	"grip_strength"
-	# "heel_bone_mineral_density_3148"
-	# "mean_time_to_identify_matches_20023"
-	# "number_of_incorrect_matches_399"
-	# "sleep_duration_1160"
-	# "adjusted_telomere_ratio_22191"
-	# "white_blood_cell_count_30000"
-	# "red_blood_cell_count_30010"
-	# "haemoglobin_concentration_30020"
-	# "mean_corpuscular_volume_30040"
-	# "glucose_30740"
-	# "urate_30880"
-	# "testosterone_30850"
-	# "IGF1_30770"
-	# "SHBG_30830" 
 )
 
-VERSION=V4
+VERSION=V4_w_save
 
 GPU=false
 CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16

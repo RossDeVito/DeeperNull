@@ -45,8 +45,7 @@ The script has the following requirements to run:
 Script has the following command line arguments:
 
 	--covar_file: Path to covariate file.
-	--pheno_file: Path to phenotype file if single-task, or paths to
-		multiple phenotype files if multi-task. 
+	--pheno_file: Path to phenotype file.
 	--model_config: Path to model configuration JSON file.
 	--out_dir: Path to output directory. If it does not exist, will 
 		be created. Default is current working directory.
@@ -73,7 +72,6 @@ Script has the following command line arguments:
 
 Example usage:
 
-	# Single-task model
 	python fit_model.py \
 		--covar_file ../data/dev/covariates.tsv \
 		--pheno_file ../data/dev/phenotype_0_5.tsv \
@@ -83,15 +81,7 @@ Example usage:
 		--pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
 
 		-c ../data/dev/covariates.tsv -p ../data/dev/phenotype_0_5.tsv -m ../data/dev/deep_null_config.json -o ../../test_out --train_samples ../data/dev/train_samples.txt --pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
-		
-	# Multi-task model
-	python fit_model.py \
-		--covar_file ../data/dev/covariates.tsv \
-		--pheno_file ../data/dev/phenotype_0_5.tsv ../data/dev/phenotype_0_1.tsv \
-		--model_config ../data/dev/model_config.json \
-		--out_dir ../.. \
-		--train_samples ../data/dev/train_samples.txt \
-		--pred_samples ../data/dev/val_samples.txt ../data/dev/test_samples.txt
+
 """
 import argparse
 import os
@@ -110,10 +100,6 @@ import xgboost as xgb
 from deeper_null.xgb_models import XGB_MODEL_TYPES, create_xgb_model
 from deeper_null.nn_models import NN_MODEL_TYPES, create_nn_model
 from deeper_null.linear_models import LINEAR_MODEL_TYPES, create_linear_model
-from deeper_null.multi_task_models import MultiTaskModel
-from deeper_null.multi_task_models.data_modules import (
-	MTTabularDataset, MTCoordScalingTabularDataset, MTScaledEmbNamedDataset
-)
 
 
 SEX_FEAT_NAME='sex_31'
@@ -123,9 +109,8 @@ def parse_args():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-c', '--covar_file', required=True,
 					help='Path to covariate file.')
-	parser.add_argument('-p', '--pheno_file', required=True, nargs='+',
-					help='Path to phenotype file if single-task, or paths to '
-						 'multiple phenotype files if multi-task.')
+	parser.add_argument('-p', '--pheno_file', required=True,
+					help='Path to phenotype file.')
 	parser.add_argument('-m', '--model_config', required=True,
 					help='Path to model configuration JSON file.')
 	parser.add_argument('-o', '--out_dir', default='.',
@@ -527,19 +512,8 @@ if __name__ == '__main__':
 	# Fit and make predictions with n-fold cross validation.
 	print('Fitting model with {} folds.'.format(args.n_folds))
 
-	if model_config['model_type'].lower() == 'multi_task':
-		is_multi_task = True
-		print('Training multi-task model.')
-
-		train_ho_preds = defaultdict(lambda: dict()) # task_name -> {samp_id: pred}
-		ensemble_preds = defaultdict(lambda: defaultdict(lambda: [])) # task_name -> samp_id -> [preds]
-	else:
-		is_multi_task = False
-		print('Training single-task model.')
-		
-		train_ho_preds = dict()
-		ensemble_preds = defaultdict(lambda: [])
-
+	train_ho_preds = dict()
+	ensemble_preds = defaultdict(lambda: [])
 	train_ho_sex = dict()
 	includes_sex = False
 
@@ -556,41 +530,7 @@ if __name__ == '__main__':
 		ho_y = train_Xy[1].loc[ho_samp_ids]
 
 		# Create model
-		if is_multi_task:
-			# Create example batch for initializing network
-			example_X = train_X.sample(
-				model_config['train_params'].get('batch_size', 32)
-			)
-
-			if model_config['input_fmt'] == 'tabular':
-				example_dataset = MTTabularDataset(
-					example_X, task_names=list(model_config['tasks'].keys())
-				)
-			elif model_config['input_fmt'] == 'coord_scaling_tabular':
-				example_dataset = MTCoordScalingTabularDataset(
-					example_X, task_names=list(model_config['tasks'].keys())
-				)
-			elif model_config['input_fmt'] == 'scaled_emb_named':
-				example_dataset = MTScaledEmbNamedDataset(
-					example_X, task_names=list(model_config['tasks'].keys())
-				)
-			else:
-				raise ValueError(f'Invalid input format: {model_config["input_fmt"]}')
-
-			dl = DataLoader(
-				example_dataset,
-				batch_size=model_config['train_params'].get('batch_size', 32),
-				# num_workers=0
-			)
-			batch = next(iter(dl))
-
-			model = create_model(
-				model_config,
-				out_dir=args.out_dir,
-				example_batch=batch
-			)
-		else:
-			model = create_model(model_config, out_dir=args.out_dir)
+		model = create_model(model_config, out_dir=args.out_dir)
 
 		# Fit model
 		model.fit(train_X, train_y)
@@ -602,18 +542,10 @@ if __name__ == '__main__':
 		# Make predictions on holdout samples
 		ho_preds = model.predict(ho_X)	# type: ignore
 
-		if is_multi_task:
-			ho_preds = dict(ho_preds)
-			for task_name, preds in ho_preds.items():
-				train_ho_preds[task_name].update(
-					dict(zip(ho_X.index, preds.flatten().tolist()))
-				)
-			
-		else:
-			train_ho_preds.update(dict(zip(
-				ho_X.index,
-				ho_preds.flatten().tolist()
-			)))
+		train_ho_preds.update(dict(zip(
+			ho_X.index,
+			ho_preds.flatten().tolist()
+		)))
 
 		# Also save sex of holdout samples if available
 		if SEX_FEAT_NAME in ho_X.columns:
@@ -627,13 +559,7 @@ if __name__ == '__main__':
 		if pred_Xy[0] is not None:
 			pred_preds = model.predict(pred_Xy[0])	# type: ignore
 
-			if is_multi_task:
-				pred_preds = dict(pred_preds)
-				for task_name, task_preds in pred_preds.items():
-					for samp_id, pred in zip(pred_Xy[0].index, task_preds.flatten().tolist()):
-						ensemble_preds[task_name][samp_id].append(pred)
-			else:
-				for samp_id, pred in zip(pred_Xy[0].index, pred_preds.flatten().tolist()):
+			for samp_id, pred in zip(pred_Xy[0].index, pred_preds.flatten().tolist()):
 					ensemble_preds[samp_id].append(pred)
 
 		# If only training one fold, break after first fold.
@@ -641,129 +567,63 @@ if __name__ == '__main__':
 			break
 
 	# Save predictions on holdout samples then score
-	if is_multi_task:
-		all_scores = dict()
+	ho_preds = pd.DataFrame.from_dict(train_ho_preds, orient='index')
+	ho_preds.columns = ['pred']
 
-		for task_name, preds in train_ho_preds.items():
-			ho_preds = pd.DataFrame.from_dict(preds, orient='index')
-			ho_preds.columns = ['pred']
+	ho_preds.index.name = args.sample_id_col
+	ho_preds.reset_index().to_csv(
+		os.path.join(args.out_dir, 'ho_preds.csv'),
+		index=False
+	)
 
-			ho_preds.index.name = args.sample_id_col
-			ho_preds.reset_index().to_csv(
-				os.path.join(args.out_dir, f'ho_preds_{task_name}.csv'),
-				index=False
-			)
+	# Join with holdout phenotype values and name columns 'true'
+	ho_preds = ho_preds.join(train_Xy[1])
+	ho_preds = ho_preds.rename(columns={train_Xy[1].columns[0]: 'true'})
 
-			# Join with holdout phenotype values and name columns 'true'
-			ho_preds = ho_preds.join(train_Xy[1][task_name])
-			ho_preds = ho_preds.rename(columns={train_Xy[1][task_name].name: 'true'})
+	# Join sex if available
+	if includes_sex:
+		ho_sex = pd.DataFrame.from_dict(train_ho_sex, orient='index')
+		ho_sex.columns = ['sex']
+		ho_preds = ho_preds.join(ho_sex)
 
-			# Join sex if available
-			if includes_sex:
-				ho_sex = pd.DataFrame.from_dict(train_ho_sex, orient='index')
-				ho_sex.columns = ['sex']
-				ho_preds = ho_preds.join(ho_sex)
+	# Drop rows with missing values
+	ho_preds = ho_preds.dropna()
 
-			# Drop rows with missing values
-			ho_preds = ho_preds.dropna()
-
-			# Calculate metrics
-			if args.binary_pheno:
-				raise NotImplementedError('Binary phenotype not implemented for multi-task models.')
-			else:
-				sex = None
-				if 'sex_31' in ho_preds.columns:
-					sex = ho_preds.sex.values
-				scores = score_and_plot_regression(
-					ho_preds['true'],
-					ho_preds['pred'],
-					args.out_dir,
-					f'ho_{task_name}',
-					sex=sex
-				)
-
-			all_scores[task_name] = scores
-
-		# Setup for saving
-		scores = all_scores
-
-	else:
-		ho_preds = pd.DataFrame.from_dict(train_ho_preds, orient='index')
-		ho_preds.columns = ['pred']
-
-		ho_preds.index.name = args.sample_id_col
-		ho_preds.reset_index().to_csv(
-			os.path.join(args.out_dir, 'ho_preds.csv'),
-			index=False
+	# Calculate metrics
+	if args.binary_pheno:
+		scores = score_and_plot_binary(
+			ho_preds['true'],
+			ho_preds['pred'],
+			args.out_dir,
+			'ho'
 		)
-	
-		# Join with holdout phenotype values and name columns 'true'
-		ho_preds = ho_preds.join(train_Xy[1])
-		ho_preds = ho_preds.rename(columns={train_Xy[1].columns[0]: 'true'})
-
-		# Join sex if available
-		if includes_sex:
-			ho_sex = pd.DataFrame.from_dict(train_ho_sex, orient='index')
-			ho_sex.columns = ['sex']
-			ho_preds = ho_preds.join(ho_sex)
-
-		# Drop rows with missing values
-		ho_preds = ho_preds.dropna()
-
-		# Calculate metrics
-		if args.binary_pheno:
-			scores = score_and_plot_binary(
-				ho_preds['true'],
-				ho_preds['pred'],
-				args.out_dir,
-				'ho'
-			)
-		else:
-			sex = None
-			if 'sex' in ho_preds.columns:
-				sex = ho_preds.sex.values
-			scores = score_and_plot_regression(
-				ho_preds['true'],
-				ho_preds['pred'],
-				args.out_dir,
-				'ho',
-				sex=sex
-			)
+	else:
+		sex = None
+		if 'sex' in ho_preds.columns:
+			sex = ho_preds.sex.values
+		scores = score_and_plot_regression(
+			ho_preds['true'],
+			ho_preds['pred'],
+			args.out_dir,
+			'ho',
+			sex=sex
+		)
 
 	# Save scores
 	with open(os.path.join(args.out_dir, 'ho_scores.json'), 'w') as f:
 		json.dump(scores, f, indent=4)
 
 	# Save ensemble predictions and standard deviation and save as one csv
-	if is_multi_task:
-		if pred_Xy[0] is not None:
-			print('Saving ensemble predictions.')
-			ens_pred_dev = {
-				task_name: {
-					sid: (np.mean(preds), np.std(preds)) for sid, preds in preds.items()
-				} for task_name, preds in ensemble_preds.items()
-			}
-			for task_name, preds in ens_pred_dev.items():
-				ens_pred_dev[task_name] = pd.DataFrame.from_dict(preds, orient='index')
-				ens_pred_dev[task_name].columns = ['pred', 'std']
-				ens_pred_dev[task_name].index.name = args.sample_id_col
-				ens_pred_dev[task_name].reset_index().to_csv(
-					os.path.join(args.out_dir, f'ens_preds_{task_name}.csv'),
-					index=False
-				)
-		else:
-			print('No prediction samples provided. No ensemble predictions to save.')
+	if pred_Xy[0] is not None:
+		print('Saving ensemble predictions.')
+		ens_pred_dev = {
+			sid: (np.mean(preds), np.std(preds)) for sid, preds in ensemble_preds.items()
+		}
+		ens_pred_dev = pd.DataFrame.from_dict(ens_pred_dev, orient='index')
+		ens_pred_dev.columns = ['pred', 'std']
+		ens_pred_dev.index.name = args.sample_id_col
+		ens_pred_dev.reset_index().to_csv(
+			os.path.join(args.out_dir, 'ens_preds.csv'), index=False
+		)
 	else:
-		if pred_Xy[0] is not None:
-			print('Saving ensemble predictions.')
-			ens_pred_dev = {
-				sid: (np.mean(preds), np.std(preds)) for sid, preds in ensemble_preds.items()
-			}
-			ens_pred_dev = pd.DataFrame.from_dict(ens_pred_dev, orient='index')
-			ens_pred_dev.columns = ['pred', 'std']
-			ens_pred_dev.index.name = args.sample_id_col
-			ens_pred_dev.reset_index().to_csv(
-				os.path.join(args.out_dir, 'ens_preds.csv'), index=False
-			)
-		else:
-			print('No prediction samples provided. No ensemble predictions to save.')
+		print('No prediction samples provided. No ensemble predictions to save.')

@@ -151,7 +151,10 @@ if __name__ == '__main__':
 	)
 
 	if pred_samples:
-		covar_data = covar_data.loc[pred_samples]
+		# Get intersection of sample IDs in covariate data and pred_samples
+		pred_samples = set(pred_samples)
+		covar_samples = set(covar_data.index)
+		pred_samples = list(pred_samples.intersection(covar_samples))
 	else:
 		pred_samples = covar_data.index
 

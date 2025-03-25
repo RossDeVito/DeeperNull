@@ -71,7 +71,6 @@ def parse_args():
 	)
 	parser.add_argument(
 		'-o', '--out_dir',
-		required=True,
 		default='.',
 		help='Directory to save output JSON file to. File will be named "shapley_values.json".'
 			' Default is ".".'

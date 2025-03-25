@@ -54,12 +54,16 @@ task run_shap_task {
 			classification_flag=""
 		fi
 
-		# Create the space-separated string in Bash
-		model_files_string=$(IFS=' '; echo "${model_files[*]}")
+		MODEL_PATH_ARGS=""
+		for model_file in ~{sep=' ' model_files}; do
+			MODEL_PATH_ARGS="$MODEL_PATH_ARGS $model_file"
+		done
+
+		echo "Model files: ${MODEL_PATH_ARGS}"
 
 		# Run DeeperNull Shapley values script
 		python3 DeeperNull/deeper_null/get_shapley_values.py \
-			--model_files ${model_files_string} \
+			--model_files ${MODEL_PATH_ARGS} \
 			--covar_file ~{covar_file} \
 			--pred_samples ~{pred_samples} \
 			--model_type ~{model_type} \

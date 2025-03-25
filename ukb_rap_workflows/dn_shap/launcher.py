@@ -32,7 +32,7 @@ import dxpy
 import sys
 
 
-WORKFLOW_ID = "workflow-GzQxgJjJv7BBqPyQ6BX64PFb"
+WORKFLOW_ID = "workflow-GzV29v0Jv7B93pkQ9zzZ8bqq"
 DEFAULT_INSTANCE = 'mem1_ssd1_v2_x16'
 
 

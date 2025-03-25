@@ -1,3 +1,5 @@
+# Options:
+# ARG PYTHON_VERSION=3.10
 ARG UBUNTU_VERSION=22.04
 ARG BASE_IMAGE=ubuntu:${UBUNTU_VERSION}
 
@@ -13,22 +15,32 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
     git \
     libjpeg-dev \
-    libpng-dev \
-	wget && \
+    libpng-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python3 and pandas + scikit-learn
+# Install Python
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python3 \
     python3-distutils \
     python3-dev \
-    python3-pip python3-setuptools && \
-    rm -rf /var/lib/apt/lists/*
+	python3-pip python3-setuptools && \
+	rm -rf /var/lib/apt/lists/*
 
-# Install LDAK
-RUN wget https://github.com/dougspeed/LDAK/raw/main/ldak6.linux \
-	-O /usr/local/bin/ldak6 && \
-	chmod +x /usr/local/bin/ldak6
+# Install Python packages for DeeperNull
+RUN pip3 install --no-cache-dir \
+	dxpy \
+	matplotlib \
+	numpy \
+	pandas \
+	pytorch-lightning \
+	scikit-learn \
+	scipy \
+	seaborn \
+	torch>=2.0 \
+	torchmetrics \
+	tqdm \
+	xgboost \
+	shapiq
 
-# Set LDAK path
-ENV LDAK_PATH=/usr/local/bin/ldak6
+# List installed packages
+RUN pip3 list

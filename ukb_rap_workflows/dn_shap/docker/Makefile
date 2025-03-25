@@ -1,8 +1,6 @@
-# docker run -it --rm gcr.io/ucsd-medicine-cast/geonull_ldak:latest /bin/bash
-
 # Definitions
 project_id = ucsd-medicine-cast
-identifier = geonull_ldak
+identifier = dn_shap
 version = 0.0.1
 
 # GCR prefix
@@ -14,11 +12,11 @@ tag = $(version)
 
 # Build
 build:
-	# cp ../../resources/plink2 .
 	docker build \
 		--progress=plain \
 		--platform linux/amd64 \
 		-t $(name):$(tag) .
+# --no-cache 
 	docker tag $(name):$(tag) $(name):latest
 
 # Push

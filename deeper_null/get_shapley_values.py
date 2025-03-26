@@ -24,7 +24,8 @@ For 'shapley_agg_values.json':
 		containing a first level key 'feature_names' with the feature names in
 		an order corresponding to the Shapley value indices in the output.
 	- The second level key is the aggregation method, either 'mean', 'median',
-	  or 'std'.
+	  or 'std'. These correspond to the mean, median, and standard deviation
+	  of ABSOLUTE Shapley values across all individuals and models.
 	- The value is then a list for Shapley values or a 2-D list for SII values.
 
 Command line arguments:
@@ -248,14 +249,18 @@ if __name__ == '__main__':
 			model_values = shapley_output[model][value_type]
 
 			for sample_id in model_values:
-				all_values.append(model_values[sample_id])
+				all_values.append(np.abs(model_values[sample_id]))
 
 		all_values = np.array(all_values)
 
-		# Compute mean, median, and std for each feature or feature interaction
+		# Compute mean, median, and std for absolute values of each feature or feature interaction
 		agg_output[value_type]['mean'] = np.mean(all_values, axis=0).tolist()
 		agg_output[value_type]['median'] = np.median(all_values, axis=0).tolist()
 		agg_output[value_type]['std'] = np.std(all_values, axis=0).tolist()
+
+	# Save aggregated Shapley values
+	with open(f'{args.out_dir}/shapley_agg_values.json', 'w') as f:
+		json.dump(agg_output, f)
 
 	# Save aggregated Shapley values
 	with open(f'{args.out_dir}/shapley_agg_values.json', 'w') as f:

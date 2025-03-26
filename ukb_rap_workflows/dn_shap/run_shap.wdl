@@ -19,7 +19,8 @@ workflow run_shap {
 	}
 
 	output {
-		File shap_values = run_shap_task.shapley_values
+		File shapley_agg_values = run_shap_task.shapley_agg_values
+		File shapley_individual_values = run_shap_task.shapley_individual_values
 	}
 
 	meta {
@@ -76,6 +77,7 @@ task run_shap_task {
 	}
 
 	output {
-		File shapley_values = "shapley_values.json"
+		File shapley_agg_values = "shapley_agg_values.json"
+		File shapley_individual_values = "shapley_individual_values.json"
 	}
 }

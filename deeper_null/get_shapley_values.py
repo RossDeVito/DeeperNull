@@ -33,6 +33,7 @@ import argparse
 import json
 import os
 import pickle
+from pprint import pprint
 
 import numpy as np
 import pandas as pd
@@ -133,6 +134,7 @@ def load_model(model_file, model_type, classification):
 if __name__ == '__main__':
 
 	args = parse_args()
+	pprint(vars(args))
 
 	# Create output directory
 	os.makedirs(args.out_dir, exist_ok=True)
@@ -157,6 +159,11 @@ if __name__ == '__main__':
 		pred_samples = list(pred_samples.intersection(covar_samples))
 	else:
 		pred_samples = covar_data.index
+
+	covar_data = covar_data.loc[pred_samples]
+
+	print(f'Computing Shapley values for {len(covar_data)} samples')
+
 
 	# Compute Shapley values for each model
 	n_models = len(args.model_files)

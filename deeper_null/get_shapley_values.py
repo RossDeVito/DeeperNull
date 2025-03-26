@@ -2,13 +2,30 @@
 for the k models in the null model.
 
 Shapley values are local, meaning they are calculated for each individual.
-Output is saved as a JSON file. The first level key is the model, named by
-the save file name with the extension removed. There is also a first level key
-'feature_names' with the feature names in an order corresponding to the Shapley
-value indices in the output for each individual. The second level key is the
-individual ID. The value is a dictionary with the following keys:
-- 'Shapley': Shapley values. Vector
-- '1-SII': First-order Shapley Interaction Index values. Matrix
+
+There are two output JSON files. One, "shapley_individual_values.json", contains
+the Shapley values and SII values for each individual for each model. The other,
+"shapley_agg_values.json", contains the aggregated Shapley values and SII values
+for each model across all people and models.
+
+For 'shapley_individual_values.json':
+
+	- The first level key is the model, named by the save file name with the
+	  extension removed. There is also a first level key 'feature_names' with
+	  the feature names in an order corresponding to the Shapley value indices
+	  in the output for each individual.
+	- The second level key is the individual ID
+	- The third level key is 'Shapley' or '1-SII', which contains the Shapley
+	  values or SII values for the individual, respectively.
+
+For 'shapley_agg_values.json':
+
+	- The first level key is the value type, either 'Shapley' or '1-SII'. Also
+		containing a first level key 'feature_names' with the feature names in
+		an order corresponding to the Shapley value indices in the output.
+	- The second level key is the aggregation method, either 'mean', 'median',
+	  or 'std'.
+	- The value is then a list for Shapley values or a 2-D list for SII values.
 
 Command line arguments:
 
@@ -20,8 +37,7 @@ Command line arguments:
 		for all samples in the covariate file.
 	-t, --model_type: Type of models. Options are 'linear', 'xgb', and 'nn'.
 		Default is 'xgb'. NOTE: Only 'xgb' supported
-	-o, --out_dir: Directory to save output JSON file to. File will be named
-		'shapley_values.json'. Default is '.'.
+	-o, --out_dir: Directory to save output JSON files to. Default is '.'.
 	--sample_id_col: Name of column in covariate file that contains
 		sample IDs. Default is 'IID'.
 	--classification: Whether the model is a classification model. Default is
@@ -73,8 +89,7 @@ def parse_args():
 	parser.add_argument(
 		'-o', '--out_dir',
 		default='.',
-		help='Directory to save output JSON file to. File will be named "shapley_values.json".'
-			' Default is ".".'
+		help='Directory to save output JSON file to. Default is ".".'
 	)
 	parser.add_argument(
 		'--sample_id_col',
@@ -214,6 +229,34 @@ if __name__ == '__main__':
 				sample_id
 			] = interaction_values[i].get_n_order_values(2).tolist()
 
-	# Save output
-	with open(f'{args.out_dir}/shapley_values.json', 'w') as f:
+	# Save individual level Shapley values
+	with open(f'{args.out_dir}/shapley_individual_values.json', 'w') as f:
 		json.dump(shapley_output, f)
+	
+	# Aggregate Shapley values
+	agg_output = {
+		'feature_names': shapley_output['feature_names'],
+		'Shapley': {},
+		'1-SII': {}
+	}
+
+	for value_type in ['Shapley', '1-SII']:
+		all_values = []
+		for model in shapley_output:
+			if model == 'feature_names':
+				continue
+			model_values = shapley_output[model][value_type]
+
+			for sample_id in model_values:
+				all_values.append(model_values[sample_id])
+
+		all_values = np.array(all_values)
+
+		# Compute mean, median, and std for each feature or feature interaction
+		agg_output[value_type]['mean'] = np.mean(all_values, axis=0).tolist()
+		agg_output[value_type]['median'] = np.median(all_values, axis=0).tolist()
+		agg_output[value_type]['std'] = np.std(all_values, axis=0).tolist()
+
+	# Save aggregated Shapley values
+	with open(f'{args.out_dir}/shapley_agg_values.json', 'w') as f:
+		json.dump(agg_output, f)

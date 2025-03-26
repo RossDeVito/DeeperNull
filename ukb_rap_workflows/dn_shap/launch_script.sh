@@ -6,7 +6,7 @@ PHENOTYPES=(
 	# "vitamin_d_30890"
 	# "diastolic_blood_pressure_4079"
 	# "systolic_blood_pressure_4080"
-	"FEV1_3063"
+	# "FEV1_3063"
 	# "FVC_3062"
 	# "HDL_cholesterol_30760"
 	# "LDL_direct_30780"

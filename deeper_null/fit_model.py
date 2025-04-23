@@ -467,7 +467,7 @@ def score_and_plot_binary(y_true, y_pred, out_dir, plot_prefix):
 	precision, recall, _ = metrics.precision_recall_curve(y_true, y_pred)
 
 	fig, ax = plt.subplots()
-	ax.plot(recall, precision, label=f"AUC-PR = {scores['avg_prec']:.3f}")
+	ax.plot(recall, precision, label=f"Avg. precision = {scores['avg_prec']:.3f}")
 	ax.set_xlabel('Recall')
 	ax.set_ylabel('Precision')
 	ax.set_title('Precision-Recall Curve')

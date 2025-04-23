@@ -1,4 +1,5 @@
-"""Script to launch UKBB DeeperNull model fitting workflow.
+"""Script to launch UKBB DeeperNull model fitting workflow for binary
+classification.
 
 Required args:
 
@@ -20,8 +21,6 @@ Optional args:
 * -i, --instance-type (str): Instance type to use for running the
 	workflow. Default: 'mem1_ssd1_x16' if no GPU flag, or 
 	'mem1_ssd1_gpu_x16' if GPU flag.
-* -g, --gpu (str): Flag to use GPU for training Pytorch models.
-	Default: False
 * --covar_dir (str): Path to storage directory containing covariate
 	files. Default: '/rdevito/deep_null/data/covar'
 * --pheno_dir (str): Path to storage directory containing phenotype
@@ -44,11 +43,9 @@ import sys
 
 
 CONFIG_UPLOAD_DIR = '/rdevito/deep_null/model_configs'
-CPU_WORKFLOW_ID = 'workflow-J04ZkxjJv7BJZ535GQzqGvK2'
-# GPU_WORKFLOW_ID = 'workflow-GgFyK2QJv7BFgX1x8KG951VJ'
+CPU_WORKFLOW_ID = 'workflow-J04ZxbjJv7BG20BJxk5VyyXX'
 
 DEFAULT_CPU_INSTANCE = 'mem1_ssd1_v2_x16'
-DEFAULT_GPU_INSTANCE = 'mem2_ssd1_gpu_x16'
 
 
 def upload_model_config(file_path, upload_dir=CONFIG_UPLOAD_DIR):
@@ -106,10 +103,6 @@ def parse_args():
 	parser.add_argument(
 		'-i', '--instance-type', type=str,
 		help='Instance type to use for running the workflow.'
-	)
-	parser.add_argument(
-		'-g', '--gpu', action='store_true',
-		help='Flag to use GPU for training Pytorch models.'
 	)
 	parser.add_argument(
 		'--covar-dir', type=str,
@@ -300,19 +293,12 @@ if __name__ == '__main__':
 	val_samp_file = f'{args.samp_dir}/{args.val_samp_fname}'
 	test_samp_file = f'{args.samp_dir}/{args.test_samp_fname}'
 
-	# Set instance type and workflow ID (CPU or GPU version)
-	if args.gpu:
-		if args.instance_type is None:
-			instance_type = DEFAULT_GPU_INSTANCE
-		else:
-			instance_type = args.instance_type
-		workflow_id = GPU_WORKFLOW_ID
+	# Set instance type and workflow ID
+	if args.instance_type is None:
+		instance_type = DEFAULT_CPU_INSTANCE
 	else:
-		if args.instance_type is None:
-			instance_type = DEFAULT_CPU_INSTANCE
-		else:
-			instance_type = args.instance_type
-		workflow_id = CPU_WORKFLOW_ID
+		instance_type = args.instance_type
+	workflow_id = CPU_WORKFLOW_ID
 
 	# Launch workflow
 	workflow = launch_fit(
@@ -326,17 +312,5 @@ if __name__ == '__main__':
 		pat=pat,
 		instance_type=instance_type,
 		workflow_id=workflow_id,
-		name=f'{args.model_desc}_{args.pheno}_{args.covar_set}'
+		name=f'{args.model_desc}_{args.pheno}_bin_cls_{args.covar_set}'
 	)
-
-	# covar_file = f'/rdevito/deep_null/data/covar/age_sex.tsv'
-	# project = 'project-GG25fB8Jv7B928vqK7k6vYY6'
-	# fname = 'age_sex.tsv'
-	# folder = '/rdevito/deep_null/data/covar'
-	# f = dxpy.find_data_objects(
-	# 	name=fname,
-	# 	folder=folder,
-	# 	project=project
-	# )
-	# r = list(f)[0]
-

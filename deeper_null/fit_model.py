@@ -445,15 +445,18 @@ def score_and_plot_binary(y_true, y_pred, out_dir, plot_prefix):
 	Returns:
 		scores: Dictionary of scores.
 	"""
+	y_pred_binary = np.where(y_pred > 0.5, 1, 0)
+
 	scores = dict()
 	scores['auc'] = metrics.roc_auc_score(y_true, y_pred)
-	scores['acc'] = metrics.accuracy_score(y_true, y_pred)
-	scores['f1'] = metrics.f1_score(y_true, y_pred)
+	scores['acc'] = metrics.accuracy_score(y_true, y_pred_binary)
+	scores['f1'] = metrics.f1_score(y_true, y_pred_binary)
+	scores['avg_prec'] = metrics.average_precision_score(y_true, y_pred)
 
-		# Plot confusion matrix
+	# Plot confusion matrix
 	fig, ax = plt.subplots()
-	cm = metrics.confusion_matrix(y_true, y_pred)
-	sns.heatmap(cm, annot=True, ax=ax)
+	cm = metrics.confusion_matrix(y_true, y_pred_binary)
+	sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
 	ax.set_xlabel('Predicted')
 	ax.set_ylabel('True')
 	ax.set_title('Confusion Matrix')
@@ -461,14 +464,22 @@ def score_and_plot_binary(y_true, y_pred, out_dir, plot_prefix):
 	plt.close()
 
 	# Plot PR curve
+	precision, recall, _ = metrics.precision_recall_curve(y_true, y_pred)
+
 	fig, ax = plt.subplots()
-	pr_curve = metrics.precision_recall_curve(y_true, y_pred)
-	ax.plot(pr_curve[0], pr_curve[1])
+	ax.plot(recall, precision, label=f"AUC-PR = {scores['avg_prec']:.3f}")
 	ax.set_xlabel('Recall')
 	ax.set_ylabel('Precision')
-	ax.set_title('PR Curve')
+	ax.set_title('Precision-Recall Curve')
+	ax.legend()
 	plt.savefig(os.path.join(out_dir, f'{plot_prefix}_pr_curve.png'))
 	plt.close()
+
+	# Save PR curve data
+	scores['pr_curve'] = {
+		'recall': recall.tolist(),
+		'precision': precision.tolist(),
+	}
 
 	return scores
 

@@ -1,20 +1,20 @@
 PHENOTYPES=(
 	"standing_height_50"
-	# "body_fat_percentage_23099"
-	# "platelet_count_30080"
-	# "glycated_haemoglobin_30750"
-	# "vitamin_d_30890"
-	# "diastolic_blood_pressure_4079"
-	# "systolic_blood_pressure_4080"
-	# "FEV1_3063"
-	# "FVC_3062"
-	# "HDL_cholesterol_30760"
-	# "LDL_direct_30780"
+	"body_fat_percentage_23099"
+	"platelet_count_30080"
+	"glycated_haemoglobin_30750"
+	"vitamin_d_30890"
+	"diastolic_blood_pressure_4079"
+	"systolic_blood_pressure_4080"
+	"FEV1_3063"
+	"FVC_3062"
+	"HDL_cholesterol_30760"
+	"LDL_direct_30780"
 	"triglycerides_30870"
-	# "c-reactive_protein_30710"
-	# "creatinine_30700"
-	# "alanine_aminotransferase_30620"
-	# "aspartate_aminotransferase_30650"
+	"c-reactive_protein_30710"
+	"creatinine_30700"
+	"alanine_aminotransferase_30620"
+	"aspartate_aminotransferase_30650"
 )
 
 SAVED_MODEL_FNAMES=(
@@ -31,8 +31,7 @@ COVAR_SET=age_sex_all_coords_time
 NULL_MODEL=xgb_3
 NULL_MODEL_TYPE=xgb
 CLASSIFICATION=false
-# PRED_SAMP_FILE=test_iids.txt
-PRED_SAMP_FILE=test_iids_100.txt
+PRED_SAMP_FILE=test_iids.txt
 
 # Default locations
 NULL_SAVE_DIR=/rdevito/deep_null/dn_output/${VERSION}

@@ -100,6 +100,7 @@ if __name__ == '__main__':
 
 	# Add minor y-axis grid lines
 	for ax in g.axes.flat:
+		ax.set_axisbelow(True)
 		ax.yaxis.set_minor_locator(AutoMinorLocator())
 		ax.grid(which='minor', axis='y', linestyle='-', alpha=0.3)
 

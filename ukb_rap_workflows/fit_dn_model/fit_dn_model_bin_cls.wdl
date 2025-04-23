@@ -24,11 +24,9 @@ workflow fit_dn_model {
 
 	output {
 		File ens_preds = fit_dn_model_task.ens_preds
-		File ho_jointplot = fit_dn_model_task.ho_jointplot
-		File ho_jointplot_male = fit_dn_model_task.ho_jointplot_male
-		File ho_jointplot_female = fit_dn_model_task.ho_jointplot_female
 		File ho_preds = fit_dn_model_task.ho_preds
-		File ho_scatter = fit_dn_model_task.ho_scatter
+		File ho_confusion_matrix = fit_dn_model_task.ho_confusion_matrix
+		File ho_pr_curve = fit_dn_model_task.ho_pr_curve
 		File ho_scores = fit_dn_model_task.ho_scores
 		File fit_model_config = fit_dn_model_task.fit_model_config
 		Array[File]? trained_lin_models = fit_dn_model_task.trained_lin_models
@@ -75,7 +73,9 @@ task fit_dn_model_task {
 			--model_config ~{model_config} \
 			--train_samples ~{train_samp_file} \
 			--pred_samples ~{val_samp_file} ~{test_samp_file} \
-			--save_models
+			--save_models \
+			--binary_pheno
+		
 	>>>
 
 	runtime {
@@ -84,11 +84,9 @@ task fit_dn_model_task {
 
 	output {
 		File ens_preds = "ens_preds.csv"
-		File ho_jointplot = "ho_jointplot.png"
-		File ho_jointplot_male = "ho_male_jointplot.png"
-		File ho_jointplot_female = "ho_female_jointplot.png"
 		File ho_preds = "ho_preds.csv"
-		File ho_scatter = "ho_scatter.png"
+		File ho_confusion_matrix = "ho_confusion_matrix.png"
+		File ho_pr_curve = "ho_pr_curve.png"
 		File ho_scores = "ho_scores.json"
 		File fit_model_config = "model_config.json"
 		Array[File]? trained_lin_models = glob("model_*.pkl")

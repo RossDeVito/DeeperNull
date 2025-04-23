@@ -1,0 +1,12 @@
+{
+	"model_type": "xgb_regressor",
+	"model_args": {
+		"eval_metric": ["aucpr", "auc"],
+		"objective": "binary:logistic",
+		"early_stopping_rounds": 20,
+		"verbosity": 1
+	},
+	"fit_args": {
+		"val_frac": 0.1
+	}
+}

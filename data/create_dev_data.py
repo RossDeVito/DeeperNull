@@ -173,3 +173,20 @@ if __name__ == '__main__':
 			sep='\t',
 			index=False
 		)
+
+		# Also save binary version of phenotype with threshold of median value
+		median_val = np.median(pheno)
+		binary_pheno = np.where(pheno > median_val, 1, 0)
+		binary_pheno_df = pd.DataFrame({
+			'IID': iids,
+			f"phenotype_{str(var_exp_vals[i]).replace('.', '_')}_binary": binary_pheno
+		})
+		binary_pheno_df = binary_pheno_df.sample(frac=0.9)
+		binary_pheno_df.to_csv(
+			os.path.join(
+				save_dir, 
+				f"phenotype_{str(var_exp_vals[i]).replace('.', '_')}_binary.tsv"
+			),
+			sep='\t',
+			index=False
+		)

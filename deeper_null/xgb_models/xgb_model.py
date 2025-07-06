@@ -9,6 +9,8 @@ Model configuration JSON should have the following keys:
 	present, then the model will use early stopping based on the randomly
 	sampled validation set. Use with 'eval_metric' and 
 	'early_stopping_rounds' in 'model_args'.
+
+NOTE: Classifier is only for binary classification.
 """
 
 from copy import deepcopy
@@ -21,7 +23,7 @@ XGB_MODEL_TYPES = ['xgb_classifier', 'xgb_regressor']
 
 
 class ClassifierXGB:
-	"""XGBoost classifier wrapper."""
+	"""XGBoost binary classifier wrapper."""
 
 	def __init__(self, config):
 		"""Initialize XGBoost classifier."""
@@ -43,8 +45,8 @@ class ClassifierXGB:
 			self.model.fit(X, y)
 
 	def predict(self, X):
-		"""Make predictions."""
-		return self.model.predict(X)
+		"""Make predictions as probabilities."""
+		return self.model.predict_proba(X)[:, 1]
 	
 	def save(self, path, fold_num):
 		"""Save model."""

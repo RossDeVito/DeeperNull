@@ -13,7 +13,10 @@ tests/*
 
 **/ukb_rap_workflows/dn_eval_local/tmp
 **/ukb_rap_workflows/dn_eval_local/scores
+**/ukb_rap_workflows/dn_eval_local/scores_bin_cls
 **/ukb_rap_workflows/dn_shap_eval_local/agg_shap
+**/ukb_rap_workflows/dn_eval_local/*.csv
+
 
 **/ukb_rap_workflows/PRS_eval_local/tmp
 **/ukb_rap_workflows/PRS_eval_local/scores

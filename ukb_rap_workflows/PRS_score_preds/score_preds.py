@@ -8,6 +8,9 @@ Args:
 * -t, --test-preds: Path to test set predictions CSV file.
 * -p, --pheno-file: Path to ground true phenotype file.
 * -o, --out-dir: Path to output directory.
+* -c, --case-control: If included, the phenotype is case-control and the
+	ground truth is binary. If not included, the phenotype is continuous.
+
 """
 
 import argparse
@@ -29,6 +32,11 @@ def parse_args():
 	parser.add_argument("-t", "--test-preds", required=True)
 	parser.add_argument("-p", "--pheno-file", required=True)
 	parser.add_argument("-o", "--out-dir", required=True)
+	parser.add_argument(
+		"-c", "--case-control",
+		action="store_true",
+		help="If included, the phenotype is case-control and the ground truth is binary."
+	)
 
 	return parser.parse_args()
 
@@ -112,6 +120,62 @@ def score_and_plot_preds(
 	}
 
 
+def score_and_plot_case_control_preds(
+	y_true,
+	y_pred,
+	out_dir,
+	desc=None,
+	plot_prefix=''
+):
+	"""Score case-control predictions and plot pr curve.
+
+	y_pred should be continuous. Only metrics on continuous predictions
+	are returned.
+	
+	Returns dict with the following keys:
+		- average_precision: Average precision score
+		- roc_auc: ROC AUC score
+		- pr_precision: PR curve precision
+		- pr_recall: PR curve recall
+
+	Plots:
+		- PR curve
+	
+	"""
+
+	# Score predictions
+	average_precision = metrics.average_precision_score(y_true, y_pred)
+	roc_auc = metrics.roc_auc_score(y_true, y_pred)
+
+	# Plot PR curve
+	precision, recall, _ = metrics.precision_recall_curve(y_true, y_pred)
+
+	plt.figure()
+	plt.plot(recall, precision, marker='.')
+	plt.xlabel('Recall')
+	plt.ylabel('Precision')
+	if desc is not None:
+		plt.title(desc)
+	else:
+		plt.title('PR Curve')
+	plt.tight_layout()
+
+	if plot_prefix != '':
+		plot_prefix = plot_prefix + '_'
+	plt.savefig(
+		os.path.join(out_dir, f'{plot_prefix}pr_curve.png'),
+		dpi=300
+	)
+	plt.close()
+
+	return {
+		'average_precision': average_precision,
+		'roc_auc': roc_auc,
+		'pr_precision': precision.tolist(),
+		'pr_recall': recall.tolist(),
+	}
+
+
 if __name__ == '__main__':
 
 	args = parse_args()
@@ -130,21 +194,43 @@ if __name__ == '__main__':
 	test_preds = test_preds.merge(pheno, on='IID', how='inner')
 
 	# Score and plot
-	val_scores = score_and_plot_preds(
-		val_preds['true'],
-		val_preds['pred'],
-		args.out_dir,
-		desc='Validation',
-		plot_prefix='val'
-	)
+	if args.case_control:
+		val_preds['true'] = val_preds['true'].astype(int)
+		test_preds['true'] = test_preds['true'].astype(int)
 
-	test_scores = score_and_plot_preds(
-		test_preds['true'],
-		test_preds['pred'],
-		args.out_dir,
-		desc='Test',
-		plot_prefix='test'
-	)
+		val_scores = score_and_plot_case_control_preds(
+			val_preds['true'],
+			val_preds['pred'],
+			args.out_dir,
+			desc='Validation',
+			plot_prefix='val'
+		)
+		test_scores = score_and_plot_case_control_preds(
+			test_preds['true'],
+			test_preds['pred'],
+			args.out_dir,
+			desc='Test',
+			plot_prefix='test'
+		)
+
+	else:
+		val_preds['true'] = val_preds['true'].astype(float)
+		test_preds['true'] = test_preds['true'].astype(float)
+
+		val_scores = score_and_plot_preds(
+			val_preds['true'],
+			val_preds['pred'],
+			args.out_dir,
+			desc='Validation',
+			plot_prefix='val'
+		)
+		test_scores = score_and_plot_preds(
+			test_preds['true'],
+			test_preds['pred'],
+			args.out_dir,
+			desc='Test',
+			plot_prefix='test'
+		)
 
 	# Save scores
 	scores = {

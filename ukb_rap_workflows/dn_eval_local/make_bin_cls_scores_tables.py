@@ -1,4 +1,5 @@
-"""Make and save table of null model performance metrics for all models.
+"""Make and save table of null model performance metrics for all models and
+PR curve info.
 
 Also tracks what still has not been done.
 """
@@ -58,11 +59,11 @@ if __name__ == '__main__':
 
 	# Options
 	include_with_pc = True
-	version = 'V4'
+	version = 'V4_w_save_bin_cls'
 
 	dn_out_dir = '/rdevito/deep_null/dn_output'
 
-	save_dir = 'scores'
+	save_dir = 'scores_bin_cls'
 	temp_dir = 'tmp'
 
 	covar_sets = [
@@ -77,41 +78,14 @@ if __name__ == '__main__':
 	]
 
 	model_types = [
-		"lin_reg_1",
-		"lasso_1",
-		"ridge_2",
-		"deepnull_orig_1",
-		"deepnull_es_1",
-		"deepnull_eswp_1",
-		"deepnull_eswp_sm_1",
-		"xgb_1",
-		"xgb_2",
 		"xgb_3",
 	]
 
 	phenos = [
-		"standing_height_50",
-		"body_fat_percentage_23099",
-		"platelet_count_30080",
-		"glycated_haemoglobin_30750",
-		"vitamin_d_30890",
-		"diastolic_blood_pressure_4079",
-		"systolic_blood_pressure_4080",
-		"FEV1_3063",
-		"FVC_3062",
-		"HDL_cholesterol_30760",
-		"LDL_direct_30780",
-		"triglycerides_30870",
-		"c-reactive_protein_30710",
-		"creatinine_30700",
-		"alanine_aminotransferase_30620",
-		"aspartate_aminotransferase_30650",
+		"asthma_42015",
+		"depression_20438",
+		"diabetes_2443",
 	]
-
-	# Removed phenos for less than 100,000 samples
-		# "arterial_stiffness_index_21021",
-		# "fluid_intelligence_score_20016",
-		# "hearing_SRT",
 
 	# Make temp dir and scores dir locally if they don't exist
 	if not os.path.exists(temp_dir):
@@ -127,6 +101,7 @@ if __name__ == '__main__':
 
 	# Get scores
 	loaded_scores = []
+	pr_curves = defaultdict(dict)
 	not_done = []
 
 	if include_with_pc:
@@ -149,6 +124,15 @@ if __name__ == '__main__':
 		scores_dict = get_scores_dict(
 			f"{dn_out_dir}/{version}/{pheno}/{covar_set}/{model_type}/ho_scores.json"
 		)
+
+		# Pop 'recall' and 'precision' from scores_dict
+		# Save seperately as JSON
+		if scores_dict is not None:
+			pr_data = scores_dict.pop('pr_curve')
+			pr_curves[pheno][covar_set] = {
+				'recall': pr_data['recall'],
+				'precision': pr_data['precision'],
+			}
 
 		if scores_dict is not None:
 			loaded_scores.append({
@@ -182,3 +166,8 @@ if __name__ == '__main__':
 	# Save
 	scores_df.to_csv(f'{save_dir}/scores.csv', index=False)
 	not_done_df.to_csv(f'{save_dir}/not_done.csv', index=False)
+
+	# Save PR curves
+	pr_curves_fname = f'{save_dir}/pr_curves.json'
+	with open(pr_curves_fname, 'w') as f:
+		json.dump(pr_curves, f)

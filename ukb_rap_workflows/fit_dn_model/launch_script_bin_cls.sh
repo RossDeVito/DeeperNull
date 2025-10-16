@@ -1,26 +1,23 @@
 # Define lists of model configs and covar sets
-MODEL_CONFIGS=("xgb_3")
+MODEL_CONFIGS=("xgb_3_bin_cls")
 
-# COVAR_SETS=(
-# 	"age_sex" "age_sex_pc"
-# 	"age_sex_birth_coords" "age_sex_birth_coords_pc"
-# 	"age_sex_home_coords" "age_sex_home_coords_pc"
-# 	"age_sex_all_coords" "age_sex_all_coords_pc"
-# 	"age_sex_tod" "age_sex_tod_pc"
-# 	"age_sex_toy" "age_sex_toy_pc"
-# 	"age_sex_time" "age_sex_time_pc"
-# 	"age_sex_all_coords_time" "age_sex_all_coords_time_pc"
-# )
 COVAR_SETS=(
-	"age_sex_all_coords_time"
+	"age_sex" "age_sex_pc"
+	"age_sex_birth_coords" "age_sex_birth_coords_pc"
+	"age_sex_home_coords" "age_sex_home_coords_pc"
+	"age_sex_all_coords" "age_sex_all_coords_pc"
+	"age_sex_tod" "age_sex_tod_pc"
+	"age_sex_toy" "age_sex_toy_pc"
+	"age_sex_time" "age_sex_time_pc"
+	"age_sex_all_coords_time" "age_sex_all_coords_time_pc"
 )
 
 CONFIG_DIR=model_configs
 
 PHENOTYPES=(
 	"asthma_42015"
-	# "depression_20438"
-	# "diabetes_2443"
+	"depression_20438"
+	"diabetes_2443"
 )
 
 VERSION=V4_w_save_bin_cls

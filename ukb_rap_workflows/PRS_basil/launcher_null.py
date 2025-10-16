@@ -42,7 +42,8 @@ import dxpy
 
 WORKFLOW_ID = 'workflow-Gv3K038Jv7B982XQjF2JXbjp'
 # DEFAULT_INSTANCE = 'mem2_ssd1_v2_x64'
-DEFAULT_INSTANCE = 'mem3_ssd1_v2_x32'
+# DEFAULT_INSTANCE = 'mem3_ssd1_v2_x32'
+DEFAULT_INSTANCE = 'mem3_ssd1_v2_x48'
 
 
 def get_dxlink_from_path(path_to_link):
@@ -120,7 +121,8 @@ def parse_args():
 	)
 	parser.add_argument(
 		'--null-dir',
-		default='/rdevito/deep_null/dn_output/V4',
+		# default='
+		# test_iids_100.txt',
 		help='Directory containing the null model predictions.'
 	)
 	parser.add_argument(
@@ -258,6 +260,7 @@ if __name__ == '__main__':
 
 	# Set sample split ID paths
 	train_samp_fname = f'{args.splits_dir}/train_iids.txt'
+	# train_samp_fname = f'{args.splits_dir}/train_iids_dev.txt'	# FOR DEV
 	val_samp_fname = f'{args.splits_dir}/val_iids.txt'
 	test_samp_fname = f'{args.splits_dir}/test_iids.txt'
 

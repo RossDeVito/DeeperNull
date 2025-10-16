@@ -1,20 +1,26 @@
+# PHENOTYPES=(
+# 	"standing_height_50"
+# 	"body_fat_percentage_23099"
+# 	"platelet_count_30080"
+# 	"glycated_haemoglobin_30750"
+# 	"vitamin_d_30890"
+# 	"diastolic_blood_pressure_4079"
+# 	"systolic_blood_pressure_4080"
+# 	"FEV1_3063"
+# 	"FVC_3062"
+# 	"HDL_cholesterol_30760"
+# 	"LDL_direct_30780"
+# 	"triglycerides_30870"
+# 	"c-reactive_protein_30710"
+# 	"creatinine_30700"
+# 	"alanine_aminotransferase_30620"
+# 	"aspartate_aminotransferase_30650"
+# )
+
 PHENOTYPES=(
-	"standing_height_50"
-	"body_fat_percentage_23099"
-	"platelet_count_30080"
-	"glycated_haemoglobin_30750"
-	"vitamin_d_30890"
-	"diastolic_blood_pressure_4079"
-	"systolic_blood_pressure_4080"
-	"FEV1_3063"
-	"FVC_3062"
-	"HDL_cholesterol_30760"
-	"LDL_direct_30780"
-	"triglycerides_30870"
-	"c-reactive_protein_30710"
-	"creatinine_30700"
-	"alanine_aminotransferase_30620"
-	"aspartate_aminotransferase_30650"
+	"asthma_42015"
+	"depression_20438"
+	"diabetes_2443"
 )
 
 SAVED_MODEL_FNAMES=(
@@ -26,11 +32,13 @@ SAVED_MODEL_FNAMES=(
 )
 
 # Set the version of the model to use
-VERSION=V4_w_save
+# VERSION=V4_w_save
+VERSION=V4_w_save_bin_cls
 COVAR_SET=age_sex_all_coords_time
-NULL_MODEL=xgb_3
+# NULL_MODEL=xgb_3
+NULL_MODEL=xgb_3_bin_cls
 NULL_MODEL_TYPE=xgb
-CLASSIFICATION=false
+CLASSIFICATION=true
 PRED_SAMP_FILE=test_iids.txt
 
 # Default locations

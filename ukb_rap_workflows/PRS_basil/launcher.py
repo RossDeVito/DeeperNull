@@ -38,7 +38,8 @@ import dxpy
 
 WORKFLOW_ID = 'workflow-Gy4G6K0Jv7BFgbYjBKyP45Vv'
 # DEFAULT_INSTANCE = 'mem2_ssd1_v2_x64'
-DEFAULT_INSTANCE = 'mem3_ssd1_v2_x32'
+# DEFAULT_INSTANCE = 'mem3_ssd1_v2_x32'
+DEFAULT_INSTANCE = 'mem3_ssd1_v2_x48'
 
 
 def get_dxlink_from_path(path_to_link):
@@ -224,6 +225,7 @@ if __name__ == '__main__':
 
 	# Set sample split ID paths
 	train_samp_fname = f'{args.splits_dir}/train_iids.txt'
+	# train_samp_fname = f'{args.splits_dir}/train_iids_dev.txt'	# FOR DEV
 	val_samp_fname = f'{args.splits_dir}/val_iids.txt'
 	test_samp_fname = f'{args.splits_dir}/test_iids.txt'
 

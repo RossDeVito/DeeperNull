@@ -15,6 +15,7 @@ tag = $(version)
 # Build
 build:
 	cp ../score_preds.py .
+	cp ../score_preds_bootstrap.py .
 	docker build \
 		--progress=plain \
 		--platform linux/amd64 \

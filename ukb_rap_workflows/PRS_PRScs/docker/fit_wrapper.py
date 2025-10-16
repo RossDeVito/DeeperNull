@@ -8,13 +8,17 @@ Args:
 	-v, --val-iids: Path to validation set IIDs file.
 	-t, --test-iids: Path to test set IIDs file.
 	-o, --out-dir: Path to output directory.
+	-b, --binary: If provided, the model will be fitted as a binary logistic
+		regression model. Output values will be probabilities in the range
+		of [0, 1]. If not provided, the model will be fitted as a linear
+		regression model.
 """
 
 import argparse
 import os
 
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 
 
 def parse_args():
@@ -26,6 +30,11 @@ def parse_args():
 	parser.add_argument("-v", "--val-iids", required=True)
 	parser.add_argument("-t", "--test-iids", required=True)
 	parser.add_argument("-o", "--out-dir", required=True)
+	parser.add_argument(
+		"-b", "--binary",
+		action="store_true",
+		help="If provided, the model will be fitted as a binary logistic regression model. "
+	)
 
 	return parser.parse_args()
 
@@ -96,15 +105,24 @@ if __name__ == '__main__':
 
 	del data_df, scores_df, pheno_df, covar_df
 
-	# Fit linear regression
-	fit_model = LinearRegression().fit(
-		X_train,
-		y_train
-	)
+	# Fit and predict
+	if args.binary:
+		fit_model = LogisticRegression().fit(
+			X_train,
+			y_train
+		)
 
-	# Predict
-	val_preds = fit_model.predict(X_train).flatten()
-	test_preds = fit_model.predict(X_test).flatten()
+		val_preds = fit_model.predict_proba(X_train)[:, 1].flatten()
+		test_preds = fit_model.predict_proba(X_test)[:, 1].flatten()
+	
+	else:
+		fit_model = LinearRegression().fit(
+			X_train,
+			y_train
+		)
+
+		val_preds = fit_model.predict(X_train).flatten()
+		test_preds = fit_model.predict(X_test).flatten()	
 
 	# Save predictions
 	pd.DataFrame(

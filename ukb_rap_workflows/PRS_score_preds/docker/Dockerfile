@@ -39,3 +39,4 @@ ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
 # Copy in score_preds.py from local directory
 COPY score_preds.py /home/score_preds.py
+COPY score_preds_bootstrap.py /home/score_preds_bootstrap.py

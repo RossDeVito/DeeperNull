@@ -2,6 +2,7 @@
 
 import os
 import json
+import math
 
 import numpy as np
 import pandas as pd
@@ -14,6 +15,11 @@ from shapiq.plot.network import(
 	_add_weight_to_edges_in_graph
 )
 import networkx as nx
+
+
+# Set figure DPI for saving figs
+import matplotlib as mpl
+mpl.rcParams['savefig.dpi'] = 1200
 
 
 FEATURE_NAMES_MAP = {
@@ -215,7 +221,6 @@ def network_plot(
 
 	# Center Text (Optional)
 	if center_text is not None:
-		 # ... (center text logic remains the same) ...
 		background_color, line_color = '#ffffff', '#000000'
 		current_ax.text(
 			0, 0, center_text,
@@ -259,6 +264,9 @@ if __name__ == '__main__':
 		"creatinine_30700",
 		"alanine_aminotransferase_30620",
 		"aspartate_aminotransferase_30650",
+		"asthma_42015",
+		"depression_20438",
+		"diabetes_2443",
 	]
 
 	# Load aggregated SHAP values
@@ -301,9 +309,9 @@ if __name__ == '__main__':
 	# Plot agg Shapley values without interactions
 	# Plot should be 4x4 grid of bar plots plotted using sns.catplot
 	
-	# measure = 'Mean Shapley value'
+	measure = 'Mean Shapley value'
 	# measure = 'Median Shapley value'
-	measure = 'Std. dev. of Shapley values'
+	# measure = 'Std. dev. of Shapley values'
 
 	g = sns.catplot(
 		data=shap_df[shap_df['Value type'] == measure],
@@ -350,17 +358,31 @@ if __name__ == '__main__':
 
 	plt.show()
 
-	# Plot 4x4 grid of network plots
+	# Plot max width 4 grid of network plots
+	max_cols = 4
 	agg_method = ['mean', 'median', 'std'][0]
 
-	fig, axs = plt.subplots(4, 4, figsize=(20, 20))
+	# Calculate number of rows and columns based on number of phenotypes
+	n_pheno = len(phenos)
+	n_cols = min(max_cols, n_pheno)
+	n_rows = math.ceil(n_pheno / n_cols)
+
+	per_plot_size = 2
+	fig, axs = plt.subplots(
+		n_rows,
+		n_cols,
+		figsize=(per_plot_size * n_cols, per_plot_size * n_rows)
+	)
+
+	# Make sure axs is 2D
+	axs = np.atleast_2d(axs)
 
 	for i, pheno in enumerate(phenos):
-		ax = axs[i // 4, i % 4]
+		ax = axs[i // n_cols, i % n_cols]
 
 		network_plot(
-			first_order_values=np.array(all_shap[pheno]['Shapley']['mean']),
-			second_order_values=np.array(all_shap[pheno]['1-SII']['mean']),
+			first_order_values=np.array(all_shap[pheno]['Shapley'][agg_method]),
+			second_order_values=np.array(all_shap[pheno]['1-SII'][agg_method]),
 			feature_names=[
 				FEATURE_NAMES_MAP[feat] for feat in all_shap[pheno]['feature_names']
 			],
@@ -371,12 +393,19 @@ if __name__ == '__main__':
 
 		ax.set_title(pheno)
 
+	# Turn off unused subplots if any
+	for j in range(n_pheno, n_rows * n_cols):
+		axs[j // n_cols, j % n_cols].axis('off')
+
 	plt.tight_layout()
 	if agg_method == 'std':
 		agg_method_title = 'Std. deviation'
 	else:
-		agg_method_title = agg_method.capitalize
+		agg_method_title = agg_method.capitalize()
 	plt.suptitle(f'{agg_method_title} of Shapley and 1-SII values')
+
+	# tight layout to avoid overlap with suptitle
+	plt.subplots_adjust(top=0.9)
 
 	# Create legend
 	leg_fig, leg_ax = network_plot(
@@ -385,6 +414,7 @@ if __name__ == '__main__':
 		feature_names=[
 			FEATURE_NAMES_MAP[feat] for feat in all_shap[pheno]['feature_names']
 		],
+		# draw_labels=False,
 	)
 	leg_ax.set_title('Legend')
 

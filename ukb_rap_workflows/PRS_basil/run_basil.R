@@ -188,7 +188,7 @@ fit_snpnet <- snpnet(
     phenotype = args$pheno_name,
     covariates = covariates,
     configs = fit.config,
-    family = "gaussian",
+    # family = "gaussian",
     split.col = "split",
     # mem = available_memory,
     alpha=args$alpha,

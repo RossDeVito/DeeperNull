@@ -20,9 +20,13 @@ tests/*
 
 **/ukb_rap_workflows/PRS_eval_local/tmp
 **/ukb_rap_workflows/PRS_eval_local/scores
+**/ukb_rap_workflows/PRS_eval_local/sup_table
+
 **/ukb_rap_workflows/PRS_PRScs_GWAS_manhattan_local/sum_stats/*
 
 **/ukb_rap_workflows/PRS_PRScs/LD_files/
+
+**/ukb_rap_workflows/dn_shap_eval_local/plots
 
 # Ignore pat_dn_read.txt anywhere in the repository
 pat_dn_read.txt

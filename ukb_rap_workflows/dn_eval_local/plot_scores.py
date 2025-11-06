@@ -444,6 +444,7 @@ if __name__ == '__main__':
 	# Plot improvement relative to baseline for xgb3 models
 	
 	metric = 'r2'
+	# metric = 'mae'
 
 	# Filter for xgb3 models
 	# xgb3_scores_df = scores_df[
@@ -460,10 +461,16 @@ if __name__ == '__main__':
 	merged_df = scores_df.merge(baseline_df, on='pheno')
 
 	# Calculate improvement and percentage improvement
-	merged_df['improvement'] = merged_df[metric] - merged_df['baseline_metric']
-	merged_df['percent_improvement'] = (
-		merged_df['improvement'] / merged_df['baseline_metric']
-	) * 100
+	if metric == 'r2':  # higher is better
+		merged_df['improvement'] = merged_df[metric] - merged_df['baseline_metric']
+		merged_df['percent_improvement'] = (
+			merged_df['improvement'] / merged_df['baseline_metric']
+		) * 100
+	elif metric == 'mae':  # lower is better
+		merged_df['improvement'] = merged_df['baseline_metric'] - merged_df[metric]
+		merged_df['percent_improvement'] = (
+			merged_df['improvement'] / merged_df['baseline_metric']
+		) * 100
 
 	# subset to best per phenotype-covar set
 	merged_df = merged_df.sort_values(

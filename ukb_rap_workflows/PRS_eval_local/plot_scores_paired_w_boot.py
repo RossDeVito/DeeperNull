@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	metric = 'r2'
 	ci = 95
 	scores_dir = 'scores'
-	plot_BASIL = True
+	plot_BASIL = False
 	
 	# Load scores for test all, wb, and nwb sets
 	test_scores = pd.read_csv(f'{scores_dir}/test_scores.csv')

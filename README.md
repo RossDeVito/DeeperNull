@@ -6,18 +6,16 @@ Preprint available soon.
 
 ## Training Models with fit_model.py
 
-The `deeper_null/fit_model.py` script is used to train DeepNull style models on data. It supports single-task and multi-task models of various types:
+The `deeper_null/fit_model.py` script is used to train DeepNull style models on data. It supports various model types:
 
 - Scikit-learn linear and penalized linear models
 - XGBoost models  
 - PyTorch neural network models
-- Multi-task neural network models (using LibMTL library)
 
 ### Requirements
 
 1. A whitespace delimited covariate file with a header row (used as model input)
-2. Single-task: A whitespace delimited phenotype file with sample IDs and phenotype values
-   Multi-task: Multiple phenotype files with unique column names
+2. A whitespace delimited phenotype file with sample IDs and phenotype values
 3. A model configuration JSON file describing the model to fit
 4. An output directory for results
 
@@ -114,7 +112,7 @@ The `ukb_rap_workflows` directory contains workflow scripts for running analyses
 ### DeepNull Model Workflows
 
 - **fit_dn_model**: Launch DeeperNull model fitting workflows on UK Biobank RAP
-- **dn_eval_local**: Local evaluation of DeepNull models including score plotting, score table generation for single and multi-task models, and binary classification evaluation
+- **dn_eval_local**: Local evaluation of DeepNull models including score plotting, score table generation, and binary classification evaluation
 - **dn_shap**: Compute Shapley values for DeepNull models on UK Biobank data
 - **dn_shap_eval_local**: Evaluate and visualize Shapley values including SII bar plots and aggregated Shapley value analysis
 

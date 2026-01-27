@@ -1,8 +1,8 @@
 # DeeperNull
 
-Library and workflows for integrating spatiotemporal covariates (e.g. time of day, time of year, birth/home location) into polygenic scores. Also includes workflows for training and evaluation of different classes of null models with various covariate features and interpretation of null models to identify important covariate effects and interactions.
+Library and workflows for integrating spatiotemporal covariates (e.g. time of day, time of year, birth/home location) into polygenic scores. Also includes workflows for training and evaluation of different classes of null models with various covariate features and interpretation of null models to identify important covariate effects and interactions. The following describes how to fit models, compute SHAP values, and the various UK Biobank workflows used. Additional details are provided in the docstrings of the underlying files.
 
-Preprint available soon.
+[Preprint](https://www.medrxiv.org/content/10.1101/2025.11.26.25341090)
 
 ## Training Models with fit_model.py
 

@@ -124,3 +124,22 @@ The `ukb_rap_workflows` directory contains workflow scripts for running analyses
 ### Resources
 
 - **resources**: Docker image resources including PLINK2 binary and PRSice-2 executable
+
+
+## Dependencies
+
+Some workflows install this library before running a script. To avoid having packages install then, we do not have a requirements.txt file. Dependencies can be found in the Dockerfiles associated with each workflow. The dependencies for the training and Shapley value scripts are provided below:
+
+- matplotlib
+- numpy
+- pandas
+- pytorch-lightning
+- scikit-learn
+- scipy
+- seaborn
+- shapiq
+- torch>=2.0
+- torchmetrics
+- tqdm
+- xgboost
+

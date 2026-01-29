@@ -97,17 +97,16 @@ The `ukb_rap_workflows` directory contains workflow scripts for running analyses
 
 ### GWAS Workflows
 
-- **GWAS_plink**: Launch PLINK2 GWAS workflows using PGEN genotype files
+- **GWAS_plink**: PLINK2 GWAS workflow
 - **GWAS_plotting**: Create visualization plots for GWAS results
+- **PRS_PRScs_GWAS_manhattan_local**: Create Manhattan plots and scatter plots for GWAS run as part of PRScs
 
 ### PRS (Polygenic Risk Score) Workflows
 
 - **PRS_PRScs**: Launch PRScs PRS workflow with optional null model integration
-- **PRS_basil**: BASIL PRS workflow launcher with null model support
-- **PRS_prsice**: PRSice-2 PRS workflow launcher
+- **PRS_basil**: BASIL PRS workflow launcher with optional null model integration
 - **PRS_score_preds**: Score PRS predictions and create evaluation plots
 - **PRS_eval_local**: Local evaluation of PRS results including plotting scores, paired comparisons with bootstrap confidence intervals, and score table generation
-- **PRS_PRScs_GWAS_manhattan_local**: Create Manhattan plots and scatter plots for GWAS/PRS results, including multi-phenotype visualizations
 
 ### DeepNull Model Workflows
 
@@ -119,7 +118,7 @@ The `ukb_rap_workflows` directory contains workflow scripts for running analyses
 ### Comparison and Preprocessing
 
 - **compare_null_and_prs_improvements**: Compare performance improvements between null models and PRS methods
-- **geno_prepro**: Genotype data preprocessing workflows for UK Biobank including QC filtering, combining per-chromosome files, and removing samples/variants with high missing rates
+- **geno_prepro**: Genotype data preprocessing workflows for UK Biobank
 
 ### Resources
 

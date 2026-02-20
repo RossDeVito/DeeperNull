@@ -74,13 +74,13 @@ if __name__ == "__main__":
 	# Options
 
 	phenos = [
-		# "standing_height_50",				
+		"standing_height_50",				
 		# "body_fat_percentage_23099",
 		# "platelet_count_30080",				
 		# "glycated_haemoglobin_30750",
 		# "vitamin_d_30890",					
 		# "diastolic_blood_pressure_4079",
-		# "systolic_blood_pressure_4080",
+		"systolic_blood_pressure_4080",
 		# "FEV1_3063",
 		# "FVC_3062",
 		# "HDL_cholesterol_30760",
@@ -89,21 +89,21 @@ if __name__ == "__main__":
 		# "c-reactive_protein_30710",
 		# "creatinine_30700",
 		# "alanine_aminotransferase_30620",
-		"aspartate_aminotransferase_30650"
+		# "aspartate_aminotransferase_30650"
 	]
 
 	save_dir = "sum_stats"
 
 	covar_sets = [
 		'age_sex_pc',
-		'age_sex_all_coords_pc',
-		'age_sex_time_pc',
-		'age_sex_all_coords_time_pc',
-		'age_sex_pc_null_xgb_3_age_sex',
-		'age_sex_all_coords_pc_null_xgb_3_age_sex_all_coords',
-		'age_sex_time_pc_null_xgb_3_age_sex_time',
+		# 'age_sex_all_coords_pc',
+		# 'age_sex_time_pc',
+		# 'age_sex_all_coords_time_pc',
+		# 'age_sex_pc_null_xgb_3_age_sex',
+		# 'age_sex_all_coords_pc_null_xgb_3_age_sex_all_coords',
+		# 'age_sex_time_pc_null_xgb_3_age_sex_time',
 		'age_sex_all_coords_time_pc_null_xgb_3_age_sex_all_coords_time',
-		'age_sex_all_coords_time_pc_null_xgb_3_age_sex_all_coords_time_pc',
+		# 'age_sex_all_coords_time_pc_null_xgb_3_age_sex_all_coords_time_pc',
 	]
 
 	covar_set_res_dirs = {

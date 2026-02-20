@@ -99,7 +99,7 @@ The `ukb_rap_workflows` directory contains workflow scripts for running analyses
 
 - **GWAS_plink**: PLINK2 GWAS workflow
 - **GWAS_plotting**: Create visualization plots for GWAS results
-- **PRS_PRScs_GWAS_manhattan_local**: Create Manhattan plots and scatter plots for GWAS run as part of PRScs
+- **PRS_PRScs_GWAS_manhattan_local**: Create Manhattan plots and scatter plots for GWAS run as part of PRScs. Also creates tables of changes in GWAS hits when adding null with additional covariates.
 
 ### PRS (Polygenic Risk Score) Workflows
 
@@ -117,7 +117,7 @@ The `ukb_rap_workflows` directory contains workflow scripts for running analyses
 
 ### Comparison and Preprocessing
 
-- **compare_null_and_prs_improvements**: Compare performance improvements between null models and PRS methods
+- **compare_null_and_prs_improvements**: Compare performance improvements between null models and PRS methods. Plot PGS vs. null model improvements with additional covariates over baseline. Plot improvement of PGS over null model alone.
 - **geno_prepro**: Genotype data preprocessing workflows for UK Biobank
 
 ### Resources

@@ -1,12 +1,12 @@
 # Define lists of model configs and covar sets
 # MODEL_CONFIGS=("lin_reg_1" "lasso_1" "ridge_2")
 # MODEL_CONFIGS=("deepnull_orig_1" "deepnull_es_1" "deepnull_eswp_1" "deepnull_eswp_sm_1")
-MODEL_CONFIGS=("xgb_3")
-# MODEL_CONFIGS=(
-# 	"lin_reg_1" "lasso_1" "ridge_2"
-# 	"deepnull_orig_1" "deepnull_es_1" "deepnull_eswp_1" "deepnull_eswp_sm_1"
-# 	"xgb_1" "xgb_2" "xgb_3"
-# )
+# MODEL_CONFIGS=("xgb_3")
+MODEL_CONFIGS=(
+	"lin_reg_1" "lasso_1" "ridge_2"
+	"deepnull_orig_1" "deepnull_eswp_1" "deepnull_eswp_sm_1"
+	"xgb_1" "xgb_2" "xgb_3"
+)
 
 # COVAR_SETS=(
 # 	"age_sex" "age_sex_pc"
@@ -19,7 +19,7 @@ MODEL_CONFIGS=("xgb_3")
 # 	"age_sex_all_coords_time" "age_sex_all_coords_time_pc"
 # )
 COVAR_SETS=(
-	"age_sex_all_coords_time"
+	"age_sex_all_coords_time_cbf"
 )
 
 CONFIG_DIR=model_configs
@@ -29,9 +29,9 @@ PHENOTYPES=(
 	# "body_fat_percentage_23099"
 	# "platelet_count_30080"
 	# "glycated_haemoglobin_30750"
-	"vitamin_d_30890"
+	# "vitamin_d_30890"
 	# "diastolic_blood_pressure_4079"
-	# "systolic_blood_pressure_4080"
+	"systolic_blood_pressure_4080"
 	# "FEV1_3063"
 	# "FVC_3062"
 	# "HDL_cholesterol_30760"
@@ -43,11 +43,11 @@ PHENOTYPES=(
 	# "aspartate_aminotransferase_30650"
 )
 
-VERSION=V4_w_save_b
+VERSION=V4_w_save
 
 GPU=false
-CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16
-# CPU_INSTANCE_TYPE=mem1_ssd1_v2_x36
+# CPU_INSTANCE_TYPE=mem1_ssd1_v2_x16
+CPU_INSTANCE_TYPE=mem1_ssd1_v2_x36
 
 PAT_FNAME=pat_dn_read.txt
 

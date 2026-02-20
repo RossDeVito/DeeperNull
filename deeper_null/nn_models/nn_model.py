@@ -448,7 +448,7 @@ class NNModel:
 
 		# Make predictions
 		preds = self.trainer.predict(self.model, loader)
-		return preds[0]
+		return torch.cat(preds, dim=0)
 	
 	def save(self, path, fold_num):
 		"""Save model."""

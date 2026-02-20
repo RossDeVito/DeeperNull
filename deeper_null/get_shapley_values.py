@@ -261,7 +261,3 @@ if __name__ == '__main__':
 	# Save aggregated Shapley values
 	with open(f'{args.out_dir}/shapley_agg_values.json', 'w') as f:
 		json.dump(agg_output, f)
-
-	# Save aggregated Shapley values
-	with open(f'{args.out_dir}/shapley_agg_values.json', 'w') as f:
-		json.dump(agg_output, f)

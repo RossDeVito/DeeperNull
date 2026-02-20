@@ -127,7 +127,9 @@ The `ukb_rap_workflows` directory contains workflow scripts for running analyses
 
 ## Dependencies
 
-Some workflows install this library before running a script. To avoid having packages install then, we do not have a requirements.txt file. Dependencies can be found in the Dockerfiles associated with each workflow. The dependencies for the training and Shapley value scripts are provided below:
+Some workflows install this library before running a script. To avoid having packages install then, we do not have a requirements.txt file. The dependencies for the training and Shapley value scripts are provided below. Dependencies for the all workflows can be found in their associated Dockerfiles. The docker images created by the Makefiles can also be used to run these workflows.
+
+### Training and Shapley value dependencies
 
 - matplotlib
 - numpy
